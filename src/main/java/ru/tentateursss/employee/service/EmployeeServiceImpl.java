@@ -2,6 +2,8 @@ package ru.tentateursss.employee.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.tentateursss.clinic.model.Clinic;
@@ -108,13 +110,12 @@ public class EmployeeServiceImpl implements EmployeeService {
     }
 
     @Override
-    public List<EmployeeDto> getAllEmployees() {
-        List<Employee> employees = employeeRepository.findAll();
+    public Page<EmployeeDto> getAllEmployees(Pageable pageable) {
+        Page<Employee> employees = employeeRepository.findAll(pageable);
 
-        log.debug("Найдено {} работников", employees.size());
-        return employees.stream()
-                .map(EmployeeMapper::toDto)
-                .collect(Collectors.toList());
+        log.debug("Получение всех работников (страница {}, размер {})",
+                pageable.getPageNumber(), pageable.getPageSize());
+        return employees.map(EmployeeMapper::toDto);
     }
 
     @Override

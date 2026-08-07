@@ -6,6 +6,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import ru.tentateursss.clinic.model.Clinic;
 import ru.tentateursss.clinic.repository.ClinicRepository;
 import ru.tentateursss.exception.ConflictException;
@@ -277,27 +281,31 @@ class PatientServiceImplTest {
 
     @Test
     void getAllPatientsSuccess() {
-        when(patientRepository.findAll()).thenReturn(List.of(patient));
+        Page<Patient> page = new PageImpl<>(List.of(patient));
 
-        List<PatientDto> result = patientService.getAllPatients();
+        when(patientRepository.findAll(any(Pageable.class))).thenReturn(page);
+
+        Page<PatientDto> result = patientService.getAllPatients(PageRequest.of(0, 20));
 
         assertNotNull(result);
-        assertEquals(1, result.size());
-        assertEquals("Иванов Иван Иванович", result.get(0).getFullName());
+        assertEquals(1, result.getContent().size());
+        assertEquals("Иванов Иван Иванович", result.getContent().get(0).getFullName());
 
-        verify(patientRepository, times(1)).findAll();
+        verify(patientRepository, times(1)).findAll(any(Pageable.class));
     }
 
     @Test
     void getAllPatientsReturnsEmptyListWhenNoPatients() {
-        when(patientRepository.findAll()).thenReturn(List.of());
+        Page<Patient> emptyPage = new PageImpl<>(List.of());
 
-        List<PatientDto> result = patientService.getAllPatients();
+        when(patientRepository.findAll(any(Pageable.class))).thenReturn(emptyPage);
+
+        Page<PatientDto> result = patientService.getAllPatients(PageRequest.of(0, 20));
 
         assertNotNull(result);
-        assertTrue(result.isEmpty());
+        assertTrue(result.getContent().isEmpty());
 
-        verify(patientRepository, times(1)).findAll();
+        verify(patientRepository, times(1)).findAll(any(Pageable.class));
     }
 
     @Test

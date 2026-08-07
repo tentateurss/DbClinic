@@ -7,6 +7,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import ru.tentateursss.employee.dto.EmployeeDto;
@@ -20,6 +23,7 @@ import java.util.List;
 
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -77,26 +81,34 @@ class PublicEmployeeControllerTest {
 
     @Test
     void getAllEmployeesSuccess() throws Exception {
-        when(employeeService.getAllEmployees()).thenReturn(List.of(employeeDto));
+        Page<EmployeeDto> page = new PageImpl<>(List.of(employeeDto));
 
-        mockMvc.perform(get("/public/employees"))
+        when(employeeService.getAllEmployees(any(Pageable.class))).thenReturn(page);
+
+        mockMvc.perform(get("/public/employees")
+                        .param("page", "0")
+                        .param("size", "20"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(1)))
-                .andExpect(jsonPath("$[0].id", is(1)))
-                .andExpect(jsonPath("$[0].fullName", is("Петров Петр Петрович")));
+                .andExpect(jsonPath("$.content", hasSize(1)))
+                .andExpect(jsonPath("$.content[0].id", is(1)))
+                .andExpect(jsonPath("$.content[0].fullName", is("Петров Петр Петрович")));
 
-        verify(employeeService, times(1)).getAllEmployees();
+        verify(employeeService, times(1)).getAllEmployees(any(Pageable.class));
     }
 
     @Test
     void getAllEmployeesReturnsEmptyList() throws Exception {
-        when(employeeService.getAllEmployees()).thenReturn(List.of());
+        Page<EmployeeDto> emptyPage = new PageImpl<>(List.of());
 
-        mockMvc.perform(get("/public/employees"))
+        when(employeeService.getAllEmployees(any(Pageable.class))).thenReturn(emptyPage);
+
+        mockMvc.perform(get("/public/employees")
+                        .param("page", "0")
+                        .param("size", "20"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(0)));
+                .andExpect(jsonPath("$.content", hasSize(0)));
 
-        verify(employeeService, times(1)).getAllEmployees();
+        verify(employeeService, times(1)).getAllEmployees(any(Pageable.class));
     }
 
     @Test

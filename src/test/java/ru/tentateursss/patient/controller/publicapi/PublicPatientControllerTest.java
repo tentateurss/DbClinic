@@ -7,6 +7,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import ru.tentateursss.exception.ErrorHandler;
@@ -19,6 +22,7 @@ import java.util.List;
 
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -56,7 +60,7 @@ class PublicPatientControllerTest {
     void getPatientByIdSuccess() throws Exception {
         when(patientService.getPatient(1L)).thenReturn(patientDto);
 
-        mockMvc.perform(get("/public/patient/{patientId}", 1L))
+        mockMvc.perform(get("/public/patients/{patientId}", 1L))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id", is(1)))
                 .andExpect(jsonPath("$.fullName", is("Иванов Иван Иванович")))
@@ -69,39 +73,47 @@ class PublicPatientControllerTest {
     void getPatientByIdThrowsNotFound() throws Exception {
         when(patientService.getPatient(999L)).thenThrow(new NotFoundException("Пациент с ID 999 не найден"));
 
-        mockMvc.perform(get("/public/patient/{patientId}", 999L))
+        mockMvc.perform(get("/public/patients/{patientId}", 999L))
                 .andExpect(status().isNotFound());
     }
 
     @Test
     void getAllPatientsSuccess() throws Exception {
-        when(patientService.getAllPatients()).thenReturn(List.of(patientDto));
+        Page<PatientDto> page = new PageImpl<>(List.of(patientDto));
 
-        mockMvc.perform(get("/public/patient"))
+        when(patientService.getAllPatients(any(Pageable.class))).thenReturn(page);
+
+        mockMvc.perform(get("/public/patients")
+                        .param("page", "0")
+                        .param("size", "20"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(1)))
-                .andExpect(jsonPath("$[0].id", is(1)))
-                .andExpect(jsonPath("$[0].fullName", is("Иванов Иван Иванович")));
+                .andExpect(jsonPath("$.content", hasSize(1)))
+                .andExpect(jsonPath("$.content[0].id", is(1)))
+                .andExpect(jsonPath("$.content[0].fullName", is("Иванов Иван Иванович")));
 
-        verify(patientService, times(1)).getAllPatients();
+        verify(patientService, times(1)).getAllPatients(any(Pageable.class));
     }
 
     @Test
     void getAllPatientsReturnsEmptyList() throws Exception {
-        when(patientService.getAllPatients()).thenReturn(List.of());
+        Page<PatientDto> emptyPage = new PageImpl<>(List.of());
 
-        mockMvc.perform(get("/public/patient"))
+        when(patientService.getAllPatients(any(Pageable.class))).thenReturn(emptyPage);
+
+        mockMvc.perform(get("/public/patients")
+                        .param("page", "0")
+                        .param("size", "20"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(0)));
+                .andExpect(jsonPath("$.content", hasSize(0)));
 
-        verify(patientService, times(1)).getAllPatients();
+        verify(patientService, times(1)).getAllPatients(any(Pageable.class));
     }
 
     @Test
     void getPatientsByClinicIdSuccess() throws Exception {
         when(patientService.getAllPatientsByClinicId(1L)).thenReturn(List.of(patientDto));
 
-        mockMvc.perform(get("/public/patient/clinic/{clinicId}", 1L))
+        mockMvc.perform(get("/public/patients/clinic/{clinicId}", 1L))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(1)))
                 .andExpect(jsonPath("$[0].id", is(1)))
@@ -114,7 +126,7 @@ class PublicPatientControllerTest {
     void getPatientsByClinicIdReturnsEmptyList() throws Exception {
         when(patientService.getAllPatientsByClinicId(1L)).thenReturn(List.of());
 
-        mockMvc.perform(get("/public/patient/clinic/{clinicId}", 1L))
+        mockMvc.perform(get("/public/patients/clinic/{clinicId}", 1L))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(0)));
 
@@ -126,7 +138,7 @@ class PublicPatientControllerTest {
         when(patientService.getAllPatientsByClinicId(999L))
                 .thenThrow(new NotFoundException("Клиника с ID 999 не найдена"));
 
-        mockMvc.perform(get("/public/patient/clinic/{clinicId}", 999L))
+        mockMvc.perform(get("/public/patients/clinic/{clinicId}", 999L))
                 .andExpect(status().isNotFound());
     }
 }

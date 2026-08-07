@@ -6,6 +6,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import ru.tentateursss.clinic.model.Clinic;
 import ru.tentateursss.clinic.repository.ClinicRepository;
 import ru.tentateursss.employee.dto.EmployeeDto;
@@ -301,27 +305,31 @@ class EmployeeServiceImplTest {
 
     @Test
     void getAllEmployeesSuccess() {
-        when(employeeRepository.findAll()).thenReturn(List.of(employee));
+        Page<Employee> page = new PageImpl<>(List.of(employee));
 
-        List<EmployeeDto> result = employeeService.getAllEmployees();
+        when(employeeRepository.findAll(any(Pageable.class))).thenReturn(page);
+
+        Page<EmployeeDto> result = employeeService.getAllEmployees(PageRequest.of(0, 20));
 
         assertNotNull(result);
-        assertEquals(1, result.size());
-        assertEquals("Петров Петр Петрович", result.get(0).getFullName());
+        assertEquals(1, result.getContent().size());
+        assertEquals("Петров Петр Петрович", result.getContent().get(0).getFullName());
 
-        verify(employeeRepository, times(1)).findAll();
+        verify(employeeRepository, times(1)).findAll(any(Pageable.class));
     }
 
     @Test
     void getAllEmployeesReturnsEmptyListWhenNoEmployees() {
-        when(employeeRepository.findAll()).thenReturn(List.of());
+        Page<Employee> emptyPage = new PageImpl<>(List.of());
 
-        List<EmployeeDto> result = employeeService.getAllEmployees();
+        when(employeeRepository.findAll(any(Pageable.class))).thenReturn(emptyPage);
+
+        Page<EmployeeDto> result = employeeService.getAllEmployees(PageRequest.of(0, 20));
 
         assertNotNull(result);
-        assertTrue(result.isEmpty());
+        assertTrue(result.getContent().isEmpty());
 
-        verify(employeeRepository, times(1)).findAll();
+        verify(employeeRepository, times(1)).findAll(any(Pageable.class));
     }
 
     @Test

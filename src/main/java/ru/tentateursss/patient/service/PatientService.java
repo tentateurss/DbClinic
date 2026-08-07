@@ -1,5 +1,7 @@
 package ru.tentateursss.patient.service;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import ru.tentateursss.patient.dto.NewPatientDto;
 import ru.tentateursss.patient.dto.PatientDto;
 
@@ -15,7 +17,7 @@ public interface PatientService {
 
     PatientDto getPatient(Long id);
 
-    List<PatientDto> getAllPatients();
+    Page<PatientDto> getAllPatients(Pageable pageable);
 
     List<PatientDto> getAllPatientsByClinicId(Long clinicId);
 }

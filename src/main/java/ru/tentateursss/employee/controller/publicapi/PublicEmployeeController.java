@@ -9,6 +9,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.web.bind.annotation.*;
 import ru.tentateursss.employee.dto.EmployeeDto;
 import ru.tentateursss.employee.service.EmployeeService;
@@ -45,14 +47,18 @@ public class PublicEmployeeController {
     }
 
     @Operation(
-            summary = "Получить всех сотрудников",
-            description = "Возвращает список всех сотрудников всех клиник"
+            summary = "Получить всех сотрудников с пагинацией",
+            description = "Возвращает список всех сотрудников всех клиник постранично. По умолчанию 20 сотрудников на странице, начиная с первой"
     )
-    @ApiResponse(responseCode = "200", description = "Список всех сотрудников (может быть пустым)")
+    @ApiResponse(responseCode = "200", description = "Страница со списком сотрудников")
     @GetMapping
-    public List<EmployeeDto> getAllEmployees() {
-        log.info("Public API: получение всех работников");
-        return employeeService.getAllEmployees();
+    public Page<EmployeeDto> getAllEmployees(
+            @Parameter(description = "Номер страницы (начиная с 0)", example = "0")
+            @RequestParam(defaultValue = "0") int page,
+            @Parameter(description = "Количество сотрудников на странице", example = "20")
+            @RequestParam(defaultValue = "20") int size) {
+        log.info("Public API: получение всех работников (страница {}, размер {})", page, size);
+        return employeeService.getAllEmployees(PageRequest.of(page, size));
     }
 
     @Operation(

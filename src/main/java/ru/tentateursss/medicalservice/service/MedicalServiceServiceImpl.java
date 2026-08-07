@@ -2,6 +2,8 @@ package ru.tentateursss.medicalservice.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.tentateursss.clinic.model.Clinic;
@@ -78,13 +80,11 @@ public class MedicalServiceServiceImpl implements MedicalServiceService {
     }
 
     @Override
-    public List<MedicalServiceDto> findAllMedicalService() {
-        List<MedicalService> list = medicalServiceRepository.findAll();
-
-        log.debug("Найдено {} услуг", list.size());
-        return list.stream()
-                .map(MedicalServiceMapper::toDto)
-                .collect(Collectors.toList());
+    public Page<MedicalServiceDto> findAllMedicalService(Pageable pageable) {
+        Page<MedicalService> page = medicalServiceRepository.findAll(pageable);
+        log.debug("Получение всех услуг (страница {}, размер {})",
+                pageable.getPageNumber(), pageable.getPageSize());
+        return page.map(MedicalServiceMapper::toDto);
     }
 
     @Override

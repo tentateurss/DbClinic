@@ -6,6 +6,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import ru.tentateursss.clinic.dto.ClinicDto;
 import ru.tentateursss.clinic.dto.NewClinicDto;
 import ru.tentateursss.clinic.mapper.ClinicMapper;
@@ -162,26 +166,30 @@ class ClinicServiceImplTest {
 
     @Test
     void getAllClinics_Success() {
-        when(clinicRepository.findAll()).thenReturn(List.of(clinic));
+        Page<Clinic> page = new PageImpl<>(List.of(clinic));
 
-        List<ClinicDto> result = clinicService.getAllClinics();
+        when(clinicRepository.findAll(any(Pageable.class))).thenReturn(page);
+
+        Page<ClinicDto> result = clinicService.getAllClinics(PageRequest.of(0, 20));
 
         assertNotNull(result);
-        assertEquals(1, result.size());
-        assertEquals("Центральная клиника", result.get(0).getName());
+        assertEquals(1, result.getContent().size());
+        assertEquals("Центральная клиника", result.getContent().get(0).getName());
 
-        verify(clinicRepository, times(1)).findAll();
+        verify(clinicRepository, times(1)).findAll(any(Pageable.class));
     }
 
     @Test
     void getAllClinicsEmptyList() {
-        when(clinicRepository.findAll()).thenReturn(List.of());
+        Page<Clinic> emptyPage = new PageImpl<>(List.of());
 
-        List<ClinicDto> result = clinicService.getAllClinics();
+        when(clinicRepository.findAll(any(Pageable.class))).thenReturn(emptyPage);
+
+        Page<ClinicDto> result = clinicService.getAllClinics(PageRequest.of(0, 20));
 
         assertNotNull(result);
-        assertTrue(result.isEmpty());
+        assertTrue(result.getContent().isEmpty());
 
-        verify(clinicRepository, times(1)).findAll();
+        verify(clinicRepository, times(1)).findAll(any(Pageable.class));
     }
 }

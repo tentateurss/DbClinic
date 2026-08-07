@@ -22,6 +22,10 @@ import ru.tentateursss.medicalservice.model.MedicalService;
 import ru.tentateursss.medicalservice.repository.MedicalServiceRepository;
 import ru.tentateursss.patient.model.Patient;
 import ru.tentateursss.patient.repository.PatientRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -338,26 +342,31 @@ class AppointmentServiceImplTest {
 
     @Test
     void getAllAppointmentsSuccess() {
-        when(appointmentRepository.findAll()).thenReturn(List.of(appointment));
+        Appointment appointment = new Appointment();
+        Page<Appointment> page = new PageImpl<>(List.of(appointment));
 
-        List<AppointmentDto> result = appointmentService.getAllAppointments();
+        when(appointmentRepository.findAll(any(Pageable.class))).thenReturn(page);
+
+        Page<AppointmentDto> result = appointmentService.getAllAppointments(PageRequest.of(0, 20));
 
         assertNotNull(result);
-        assertEquals(1, result.size());
+        assertEquals(1, result.getContent().size());
 
-        verify(appointmentRepository, times(1)).findAll();
+        verify(appointmentRepository, times(1)).findAll(any(Pageable.class));
     }
 
     @Test
     void getAllAppointmentsReturnsEmptyList() {
-        when(appointmentRepository.findAll()).thenReturn(List.of());
+        Page<Appointment> emptyPage = new PageImpl<>(List.of());
 
-        List<AppointmentDto> result = appointmentService.getAllAppointments();
+        when(appointmentRepository.findAll(any(Pageable.class))).thenReturn(emptyPage);
+
+        Page<AppointmentDto> result = appointmentService.getAllAppointments(PageRequest.of(0, 20));
 
         assertNotNull(result);
-        assertTrue(result.isEmpty());
+        assertTrue(result.getContent().isEmpty());
 
-        verify(appointmentRepository, times(1)).findAll();
+        verify(appointmentRepository, times(1)).findAll(any(Pageable.class));
     }
 
     @Test

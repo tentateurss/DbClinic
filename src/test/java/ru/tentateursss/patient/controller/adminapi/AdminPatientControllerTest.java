@@ -76,7 +76,7 @@ class AdminPatientControllerTest {
     void createPatientSuccess() throws Exception {
         when(patientService.createPatient(any(NewPatientDto.class))).thenReturn(patientDto);
 
-        mockMvc.perform(post("/admin/patient")
+        mockMvc.perform(post("/admin/patients")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(newPatientDto)))
                 .andExpect(status().isCreated())
@@ -92,7 +92,7 @@ class AdminPatientControllerTest {
         when(patientService.createPatient(any(NewPatientDto.class)))
                 .thenThrow(new ConflictException("Пациент с телефоном +79001234567 уже существует"));
 
-        mockMvc.perform(post("/admin/patient")
+        mockMvc.perform(post("/admin/patients")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(newPatientDto)))
                 .andExpect(status().isConflict());
@@ -103,7 +103,7 @@ class AdminPatientControllerTest {
         when(patientService.createPatient(any(NewPatientDto.class)))
                 .thenThrow(new ConflictException("Пациент с email ivan@mail.ru уже существует"));
 
-        mockMvc.perform(post("/admin/patient")
+        mockMvc.perform(post("/admin/patients")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(newPatientDto)))
                 .andExpect(status().isConflict());
@@ -114,7 +114,7 @@ class AdminPatientControllerTest {
         NewPatientDto invalidDto = new NewPatientDto();
         invalidDto.setFullName("");
 
-        mockMvc.perform(post("/admin/patient")
+        mockMvc.perform(post("/admin/patients")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(invalidDto)))
                 .andExpect(status().isBadRequest());
@@ -124,7 +124,7 @@ class AdminPatientControllerTest {
     void updatePatientSuccess() throws Exception {
         when(patientService.updatePatient(eq(1L), any(NewPatientDto.class))).thenReturn(patientDto);
 
-        mockMvc.perform(put("/admin/patient/{patientId}", 1L)
+        mockMvc.perform(put("/admin/patients/{patientId}", 1L)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(newPatientDto)))
                 .andExpect(status().isOk())
@@ -139,7 +139,7 @@ class AdminPatientControllerTest {
         when(patientService.updatePatient(eq(999L), any(NewPatientDto.class)))
                 .thenThrow(new NotFoundException("Пациент с ID 999 не найден"));
 
-        mockMvc.perform(put("/admin/patient/{patientId}", 999L)
+        mockMvc.perform(put("/admin/patients/{patientId}", 999L)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(newPatientDto)))
                 .andExpect(status().isNotFound());
@@ -150,7 +150,7 @@ class AdminPatientControllerTest {
         when(patientService.updatePatient(eq(1L), any(NewPatientDto.class)))
                 .thenThrow(new ConflictException("Пациент с телефоном +79001234567 уже существует"));
 
-        mockMvc.perform(put("/admin/patient/{patientId}", 1L)
+        mockMvc.perform(put("/admin/patients/{patientId}", 1L)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(newPatientDto)))
                 .andExpect(status().isConflict());
@@ -160,7 +160,7 @@ class AdminPatientControllerTest {
     void deletePatientSuccess() throws Exception {
         doNothing().when(patientService).deletePatient(1L);
 
-        mockMvc.perform(delete("/admin/patient/{patientId}", 1L))
+        mockMvc.perform(delete("/admin/patients/{patientId}", 1L))
                 .andExpect(status().isNoContent());
 
         verify(patientService, times(1)).deletePatient(1L);
@@ -170,7 +170,7 @@ class AdminPatientControllerTest {
     void deletePatientThrowsNotFound() throws Exception {
         doThrow(new NotFoundException("Пациент с ID 999 не найден")).when(patientService).deletePatient(999L);
 
-        mockMvc.perform(delete("/admin/patient/{patientId}", 999L))
+        mockMvc.perform(delete("/admin/patients/{patientId}", 999L))
                 .andExpect(status().isNotFound());
 
         verify(patientService, times(1)).deletePatient(999L);

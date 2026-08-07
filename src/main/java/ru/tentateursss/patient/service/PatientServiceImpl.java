@@ -2,6 +2,8 @@ package ru.tentateursss.patient.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.tentateursss.clinic.model.Clinic;
@@ -96,13 +98,11 @@ public class PatientServiceImpl implements PatientService {
     }
 
     @Override
-    public List<PatientDto> getAllPatients() {
-        List<Patient> patients = patientRepository.findAll();
-
-        log.debug("Найдено {} пациентов", patients.size());
-        return patients.stream()
-                .map(PatientMapper::toDto)
-                .collect(Collectors.toList());
+    public Page<PatientDto> getAllPatients(Pageable pageable) {
+        Page<Patient> patients = patientRepository.findAll(pageable);
+        log.debug("Получение всех пациентов (страница {}, размер {})",
+                pageable.getPageNumber(), pageable.getPageSize());
+        return patients.map(PatientMapper::toDto);
     }
 
     @Override

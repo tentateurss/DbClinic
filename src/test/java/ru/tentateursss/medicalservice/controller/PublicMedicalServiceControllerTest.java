@@ -6,6 +6,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import ru.tentateursss.exception.ErrorHandler;
@@ -18,6 +21,7 @@ import java.util.List;
 
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -50,26 +54,34 @@ class PublicMedicalServiceControllerTest {
 
     @Test
     void getAllMedicalServicesSuccess() throws Exception {
-        when(service.findAllMedicalService()).thenReturn(List.of(medicalServiceDto));
+        Page<MedicalServiceDto> page = new PageImpl<>(List.of(medicalServiceDto));
 
-        mockMvc.perform(get("/public/ms"))
+        when(service.findAllMedicalService(any(Pageable.class))).thenReturn(page);
+
+        mockMvc.perform(get("/public/ms")
+                        .param("page", "0")
+                        .param("size", "20"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(1)))
-                .andExpect(jsonPath("$[0].id", is(1)))
-                .andExpect(jsonPath("$[0].title", is("Тестовая услуга")));
+                .andExpect(jsonPath("$.content", hasSize(1)))
+                .andExpect(jsonPath("$.content[0].id", is(1)))
+                .andExpect(jsonPath("$.content[0].title", is("Тестовая услуга")));
 
-        verify(service, times(1)).findAllMedicalService();
+        verify(service, times(1)).findAllMedicalService(any(Pageable.class));
     }
 
     @Test
     void getAllMedicalServicesReturnsEmptyList() throws Exception {
-        when(service.findAllMedicalService()).thenReturn(List.of());
+        Page<MedicalServiceDto> emptyPage = new PageImpl<>(List.of());
 
-        mockMvc.perform(get("/public/ms"))
+        when(service.findAllMedicalService(any(Pageable.class))).thenReturn(emptyPage);
+
+        mockMvc.perform(get("/public/ms")
+                        .param("page", "0")
+                        .param("size", "20"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(0)));
+                .andExpect(jsonPath("$.content", hasSize(0)));
 
-        verify(service, times(1)).findAllMedicalService();
+        verify(service, times(1)).findAllMedicalService(any(Pageable.class));
     }
 
     @Test

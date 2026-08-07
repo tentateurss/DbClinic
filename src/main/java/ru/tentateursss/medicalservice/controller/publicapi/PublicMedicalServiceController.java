@@ -9,11 +9,10 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import ru.tentateursss.medicalservice.dto.MedicalServiceDto;
 import ru.tentateursss.medicalservice.service.MedicalServiceService;
 import ru.tentateursss.exception.Error;
@@ -48,14 +47,18 @@ public class PublicMedicalServiceController {
     }
 
     @Operation(
-            summary = "Получить список всех услуг",
-            description = "Возвращает все медицинские услуги во всех клиниках"
+            summary = "Получить список всех услуг с пагинацией",
+            description = "Возвращает все медицинские услуги во всех клиниках постранично. По умолчанию 20 услуг на странице"
     )
-    @ApiResponse(responseCode = "200", description = "Список всех услуг (может быть пустым)")
+    @ApiResponse(responseCode = "200", description = "Страница со списком услуг")
     @GetMapping
-    public List<MedicalServiceDto> findAllMedicalService() {
-        log.info("Public API: получение всех услуг");
-        return service.findAllMedicalService();
+    public Page<MedicalServiceDto> findAllMedicalService(
+            @Parameter(description = "Номер страницы (начиная с 0)", example = "0")
+            @RequestParam(defaultValue = "0") int page,
+            @Parameter(description = "Количество услуг на странице", example = "20")
+            @RequestParam(defaultValue = "20") int size) {
+        log.info("Public API: получение всех услуг (страница {}, размер {})", page, size);
+        return service.findAllMedicalService(PageRequest.of(page, size));
     }
 
     @Operation(

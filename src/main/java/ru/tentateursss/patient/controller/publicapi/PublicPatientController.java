@@ -9,11 +9,10 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import ru.tentateursss.patient.dto.PatientDto;
 import ru.tentateursss.patient.service.PatientService;
 import ru.tentateursss.exception.Error;
@@ -49,14 +48,18 @@ public class PublicPatientController {
     }
 
     @Operation(
-            summary = "Получить список всех пациентов",
-            description = "Возвращает список всех пациентов всех клиник"
+            summary = "Получить список всех пациентов с пагинацией",
+            description = "Возвращает список всех пациентов всех клиник постранично. По умолчанию 20 пациентов на странице"
     )
-    @ApiResponse(responseCode = "200", description = "Список всех пациентов (может быть пустым)")
+    @ApiResponse(responseCode = "200", description = "Страница со списком пациентов")
     @GetMapping
-    public List<PatientDto> getPatients() {
-        log.info("Public API: Получение всех пациентов");
-        return patientService.getAllPatients();
+    public Page<PatientDto> getPatients(
+            @Parameter(description = "Номер страницы (начиная с 0)", example = "0")
+            @RequestParam(defaultValue = "0") int page,
+            @Parameter(description = "Количество пациентов на странице", example = "20")
+            @RequestParam(defaultValue = "20") int size) {
+        log.info("Public API: Получение всех пациентов (страница {}, размер {})", page, size);
+        return patientService.getAllPatients(PageRequest.of(page, size));
     }
 
     @Operation(

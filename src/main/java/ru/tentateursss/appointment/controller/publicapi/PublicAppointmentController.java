@@ -9,6 +9,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
 import ru.tentateursss.appointment.dto.AppointmentDto;
@@ -47,14 +49,18 @@ public class PublicAppointmentController {
     }
 
     @Operation(
-            summary = "Получить все записи",
-            description = "Возвращает список всех записей во всех клиниках. Для больших объёмов данных рекомендуется использовать фильтры"
+            summary = "Получить все записи с пагинацией",
+            description = "Возвращает записи постранично. По умолчанию 20 записей на странице, начиная с первой"
     )
-    @ApiResponse(responseCode = "200", description = "Список всех записей (может быть пустым)")
+    @ApiResponse(responseCode = "200", description = "Страница с записями")
     @GetMapping
-    public List<AppointmentDto> getAllAppointments() {
-        log.info("Public API: получение всех записей");
-        return appointmentService.getAllAppointments();
+    public Page<AppointmentDto> getAllAppointments(
+            @Parameter(description = "Номер страницы (начиная с 0)", example = "0")
+            @RequestParam(defaultValue = "0") int page,
+            @Parameter(description = "Количество записей на странице", example = "20")
+            @RequestParam(defaultValue = "20") int size) {
+        log.info("Public API: получение всех записей (страница {}, размер {})", page, size);
+        return appointmentService.getAllAppointments(PageRequest.of(page, size));
     }
 
     @Operation(

@@ -9,6 +9,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.tentateursss.clinic.dto.ClinicDto;
@@ -46,13 +48,17 @@ public class PublicClinicController {
     }
 
     @Operation(
-            summary = "Получить список всех клиник",
-            description = "Возвращает список всех клиник в системе. Может быть пустым, если клиники ещё не созданы"
+            summary = "Получить список всех клиник с пагинацией",
+            description = "Возвращает клиники постранично. По умолчанию 20 клиник на странице"
     )
-    @ApiResponse(responseCode = "200", description = "Список всех клиник (может быть пустым)")
+    @ApiResponse(responseCode = "200", description = "Страница с клиниками")
     @GetMapping
-    public List<ClinicDto> getClinics() {
-        log.info("Public API: Получение всех клиник");
-        return clinicService.getAllClinics();
+    public Page<ClinicDto> getClinics(
+            @Parameter(description = "Номер страницы (начиная с 0)", example = "0")
+            @RequestParam(defaultValue = "0") int page,
+            @Parameter(description = "Количество клиник на странице", example = "20")
+            @RequestParam(defaultValue = "20") int size) {
+        log.info("Public API: Получение всех клиник (страница {}, размер {})", page, size);
+        return clinicService.getAllClinics(PageRequest.of(page, size));
     }
 }

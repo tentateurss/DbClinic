@@ -1,6 +1,9 @@
 package ru.tentateursss.appointment.controller.publicapi;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
+import static org.mockito.ArgumentMatchers.any;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -73,25 +76,33 @@ class PublicAppointmentControllerTest {
 
     @Test
     void getAllAppointmentsSuccess() throws Exception {
-        when(appointmentService.getAllAppointments()).thenReturn(List.of(appointmentDto));
+        Page<AppointmentDto> page = new PageImpl<>(List.of(appointmentDto));
 
-        mockMvc.perform(get("/public/appointments"))
+        when(appointmentService.getAllAppointments(any(Pageable.class))).thenReturn(page);
+
+        mockMvc.perform(get("/public/appointments")
+                        .param("page", "0")
+                        .param("size", "20"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(1)))
-                .andExpect(jsonPath("$[0].id", is(1)));
+                .andExpect(jsonPath("$.content", hasSize(1)))
+                .andExpect(jsonPath("$.content[0].id", is(1)));
 
-        verify(appointmentService, times(1)).getAllAppointments();
+        verify(appointmentService, times(1)).getAllAppointments(any(Pageable.class));
     }
 
     @Test
     void getAllAppointmentsReturnsEmptyList() throws Exception {
-        when(appointmentService.getAllAppointments()).thenReturn(List.of());
+        Page<AppointmentDto> emptyPage = new PageImpl<>(List.of());
 
-        mockMvc.perform(get("/public/appointments"))
+        when(appointmentService.getAllAppointments(any(Pageable.class))).thenReturn(emptyPage);
+
+        mockMvc.perform(get("/public/appointments")
+                        .param("page", "0")
+                        .param("size", "20"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(0)));
+                .andExpect(jsonPath("$.content", hasSize(0)));
 
-        verify(appointmentService, times(1)).getAllAppointments();
+        verify(appointmentService, times(1)).getAllAppointments(any(Pageable.class));
     }
 
     @Test

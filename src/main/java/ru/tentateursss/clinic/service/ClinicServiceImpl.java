@@ -2,6 +2,8 @@ package ru.tentateursss.clinic.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.tentateursss.clinic.dto.ClinicDto;
@@ -79,12 +81,10 @@ public class ClinicServiceImpl implements ClinicService {
     }
 
     @Override
-    public List<ClinicDto> getAllClinics() {
-        List<Clinic> clinics = clinicRepository.findAll();
-
-        log.info("Получение всех клиник");
-        return clinics.stream()
-                .map(ClinicMapper::toDto)
-                .collect(Collectors.toList());
+    public Page<ClinicDto> getAllClinics(Pageable pageable) {
+        Page<Clinic> clinics = clinicRepository.findAll(pageable);
+        log.info("Получение всех клиник (страница {}, размер {})",
+                pageable.getPageNumber(), pageable.getPageSize());
+        return clinics.map(ClinicMapper::toDto);
     }
 }

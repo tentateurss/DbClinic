@@ -1,5 +1,7 @@
 package ru.tentateursss.employee.service;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import ru.tentateursss.employee.dto.EmployeeDto;
 import ru.tentateursss.employee.dto.NewEmployeeDto;
 import ru.tentateursss.enums.EmployeeRole;
@@ -16,7 +18,7 @@ public interface EmployeeService {
 
     EmployeeDto getEmployeeById(Long id);
 
-    List<EmployeeDto> getAllEmployees();
+    Page<EmployeeDto> getAllEmployees(Pageable pageable);
 
     List<EmployeeDto> getEmployeesByClinicId(Long clinicId);
 

@@ -2,6 +2,7 @@ package ru.tentateursss.appointment.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.tentateursss.appointment.dto.AppointmentDto;
@@ -21,6 +22,7 @@ import ru.tentateursss.medicalservice.repository.MedicalServiceRepository;
 import ru.tentateursss.patient.model.Patient;
 import ru.tentateursss.patient.repository.PatientRepository;
 
+import org.springframework.data.domain.Pageable;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -126,12 +128,9 @@ public class AppointmentServiceImpl implements AppointmentService {
     }
 
     @Override
-    public List<AppointmentDto> getAllAppointments() {
-        List<Appointment> appointments = appointmentRepository.findAll();
-
-        return appointments.stream()
-                .map(AppointmentMapper::toDto)
-                .collect(Collectors.toList());
+    public Page<AppointmentDto> getAllAppointments(Pageable pageable) {
+        return appointmentRepository.findAll(pageable)
+                .map(AppointmentMapper::toDto);
     }
 
     @Override

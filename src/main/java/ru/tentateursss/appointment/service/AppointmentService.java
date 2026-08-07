@@ -1,9 +1,11 @@
 package ru.tentateursss.appointment.service;
 
+import org.springframework.data.domain.Page;
 import ru.tentateursss.appointment.dto.AppointmentDto;
 import ru.tentateursss.appointment.dto.NewAppointmentDto;
 import ru.tentateursss.enums.AppointmentStatus;
 
+import org.springframework.data.domain.Pageable;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -17,7 +19,7 @@ public interface AppointmentService {
 
     AppointmentDto getAppointmentById(Long appointmentId);
 
-    List<AppointmentDto> getAllAppointments();
+    Page<AppointmentDto> getAllAppointments(Pageable pageable);
 
     List<AppointmentDto> getAppointmentsByPatientId(Long patientId);
 

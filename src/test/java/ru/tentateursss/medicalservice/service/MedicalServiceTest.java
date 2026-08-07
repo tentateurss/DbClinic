@@ -6,6 +6,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import ru.tentateursss.clinic.model.Clinic;
 import ru.tentateursss.clinic.repository.ClinicRepository;
 import ru.tentateursss.exception.NotFoundException;
@@ -139,10 +143,8 @@ public class MedicalServiceTest {
 
     @Test
     void updateMedicalService_ThrowsNotFoundException_WhenClinicNotFound() {
-        // Arrange
         when(clinicRepository.findById(1L)).thenReturn(Optional.empty());
 
-        // Act & Assert
         assertThrows(NotFoundException.class, () -> {
             medicalServiceService.updateMedicalService(1L, newMedicalServiceDto);
         });
@@ -218,27 +220,31 @@ public class MedicalServiceTest {
 
     @Test
     void findAllMedicalServiceSuccess() {
-        when(medicalServiceRepository.findAll()).thenReturn(List.of(medicalService));
+        Page<MedicalService> page = new PageImpl<>(List.of(medicalService));
 
-        List<MedicalServiceDto> result = medicalServiceService.findAllMedicalService();
+        when(medicalServiceRepository.findAll(any(Pageable.class))).thenReturn(page);
+
+        Page<MedicalServiceDto> result = medicalServiceService.findAllMedicalService(PageRequest.of(0, 20));
 
         assertNotNull(result);
-        assertEquals(1, result.size());
-        assertEquals("Тестовая услуга", result.get(0).getTitle());
+        assertEquals(1, result.getContent().size());
+        assertEquals("Тестовая услуга", result.getContent().get(0).getTitle());
 
-        verify(medicalServiceRepository, times(1)).findAll();
+        verify(medicalServiceRepository, times(1)).findAll(any(Pageable.class));
     }
 
     @Test
     void findAllMedicalServiceReturnsEmptyListWhenNoServices() {
-        when(medicalServiceRepository.findAll()).thenReturn(List.of());
+        Page<MedicalService> emptyPage = new PageImpl<>(List.of());
 
-        List<MedicalServiceDto> result = medicalServiceService.findAllMedicalService();
+        when(medicalServiceRepository.findAll(any(Pageable.class))).thenReturn(emptyPage);
+
+        Page<MedicalServiceDto> result = medicalServiceService.findAllMedicalService(PageRequest.of(0, 20));
 
         assertNotNull(result);
-        assertTrue(result.isEmpty());
+        assertTrue(result.getContent().isEmpty());
 
-        verify(medicalServiceRepository, times(1)).findAll();
+        verify(medicalServiceRepository, times(1)).findAll(any(Pageable.class));
     }
 
     @Test

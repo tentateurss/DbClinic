@@ -1,5 +1,7 @@
 package ru.tentateursss.medicalservice.service;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import ru.tentateursss.medicalservice.dto.MedicalServiceDto;
 import ru.tentateursss.medicalservice.dto.NewMedicalServiceDto;
 
@@ -15,7 +17,7 @@ public interface MedicalServiceService {
 
     List<MedicalServiceDto> findMedicalServiceByClinicId(Long clinicId);
 
-    List<MedicalServiceDto> findAllMedicalService();
+    Page<MedicalServiceDto> findAllMedicalService(Pageable pageable);
 
     MedicalServiceDto findMedicalServiceById(Long id);
 }
