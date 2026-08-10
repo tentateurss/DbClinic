@@ -1,5 +1,5 @@
 # DbClinic — Data Base for network Clinic
-**Версия:** 1.1
+**Версия:** 1.2
 ---
 
 ## Описание
@@ -97,7 +97,7 @@ http://localhost:8080/swagger-ui.html
 ---
 
 ## Тесты:
- - Количество тестов: 207
+ - Количество тестов: 220
  - Запуск:
 ```bash
   mvn test

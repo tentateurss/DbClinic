@@ -98,6 +98,34 @@ public class PatientServiceImpl implements PatientService {
     }
 
     @Override
+    public PatientDto getPatientByEmail(String email) {
+        Patient findPatient = patientRepository.findByEmail(email)
+                .orElseThrow(() -> new NotFoundException("Пациент с email " + email + " не найден"));
+
+        log.debug("Получен пациент с email: {}", email);
+        return PatientMapper.toDto(findPatient);
+    }
+
+    @Override
+    public PatientDto getPatientByPhone(String phone) {
+        Patient findPatient = patientRepository.findByPhone(phone)
+                .orElseThrow(() -> new NotFoundException("Пациент с телефоном " + phone + " не найден"));
+
+        log.debug("Получен пациент с телефоном: {}", phone);
+        return PatientMapper.toDto(findPatient);
+    }
+
+    @Override
+    public List<PatientDto> getPatientByFullName(String fullName) {
+        List<Patient> findPatients = patientRepository.findByFullNameContainingIgnoreCase(fullName);
+
+        log.debug("Получение пациентов с ФИО: {}", fullName);
+        return findPatients.stream()
+                .map(PatientMapper::toDto)
+                .collect(Collectors.toList());
+    }
+
+    @Override
     public Page<PatientDto> getAllPatients(Pageable pageable) {
         Page<Patient> patients = patientRepository.findAll(pageable);
         log.debug("Получение всех пациентов (страница {}, размер {})",

@@ -141,4 +141,76 @@ class PublicPatientControllerTest {
         mockMvc.perform(get("/public/patients/clinic/{clinicId}", 999L))
                 .andExpect(status().isNotFound());
     }
+
+    @Test
+    void getPatientByEmailSuccess() throws Exception {
+        when(patientService.getPatientByEmail("ivan@mail.ru")).thenReturn(patientDto);
+
+        mockMvc.perform(get("/public/patients/email")
+                        .param("email", "ivan@mail.ru"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id", is(1)))
+                .andExpect(jsonPath("$.email", is("ivan@mail.ru")));
+
+        verify(patientService, times(1)).getPatientByEmail("ivan@mail.ru");
+    }
+
+    @Test
+    void getPatientByEmailThrowsNotFound() throws Exception {
+        when(patientService.getPatientByEmail("unknown@mail.ru"))
+                .thenThrow(new NotFoundException("Пациент с email unknown@mail.ru не найден"));
+
+        mockMvc.perform(get("/public/patients/email")
+                        .param("email", "unknown@mail.ru"))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void getPatientByPhoneSuccess() throws Exception {
+        when(patientService.getPatientByPhone("+79001234567")).thenReturn(patientDto);
+
+        mockMvc.perform(get("/public/patients/phone")
+                        .param("phone", "+79001234567"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id", is(1)))
+                .andExpect(jsonPath("$.phone", is("+79001234567")));
+
+        verify(patientService, times(1)).getPatientByPhone("+79001234567");
+    }
+
+    @Test
+    void getPatientByPhoneThrowsNotFound() throws Exception {
+        when(patientService.getPatientByPhone("+79999999999"))
+                .thenThrow(new NotFoundException("Пациент с телефоном +79999999999 не найден"));
+
+        mockMvc.perform(get("/public/patients/phone")
+                        .param("phone", "+79999999999"))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void getPatientByFullNameSuccess() throws Exception {
+        when(patientService.getPatientByFullName("Иванов")).thenReturn(List.of(patientDto));
+
+        mockMvc.perform(get("/public/patients/search")
+                        .param("fullName", "Иванов"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(1)))
+                .andExpect(jsonPath("$[0].id", is(1)))
+                .andExpect(jsonPath("$[0].fullName", is("Иванов Иван Иванович")));
+
+        verify(patientService, times(1)).getPatientByFullName("Иванов");
+    }
+
+    @Test
+    void getPatientByFullNameReturnsEmptyList() throws Exception {
+        when(patientService.getPatientByFullName("Неизвестный")).thenReturn(List.of());
+
+        mockMvc.perform(get("/public/patients/search")
+                        .param("fullName", "Неизвестный"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(0)));
+
+        verify(patientService, times(1)).getPatientByFullName("Неизвестный");
+    }
 }

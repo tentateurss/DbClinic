@@ -78,4 +78,55 @@ public class PublicPatientController {
         log.info("Public API: Получение пациентов из клиники: {}", clinicId);
         return patientService.getAllPatientsByClinicId(clinicId);
     }
+
+    @Operation(
+            summary = "Получить пациента по email",
+            description = "Возвращает пациента по email"
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Пациент с указанной почтой"),
+            @ApiResponse(responseCode = "404", description = "Пациент не найден",
+                    content = @Content(schema = @Schema(implementation = Error.class)))
+    })
+    @GetMapping("/email")
+    public PatientDto getPatientByEmail(
+            @Parameter(description = "Email пациента", required = true)
+            @RequestParam String email) {
+        log.info("Public API: Получение пациента с почтой: {}", email);
+        return patientService.getPatientByEmail(email);
+    }
+
+    @Operation(
+            summary = "Получить пациента по телефону",
+            description = "Возвращает пациента по телефону"
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Пациент с указанным номером"),
+            @ApiResponse(responseCode = "404", description = "Пациент не найден",
+                    content = @Content(schema = @Schema(implementation = Error.class)))
+    })
+    @GetMapping("/phone")
+    public PatientDto getPatientByPhone(
+            @Parameter(description = "Телефон пациента", required = true)
+            @RequestParam String phone) {
+        log.info("Public API: Получение пациента с номером: {}", phone);
+        return patientService.getPatientByPhone(phone);
+    }
+
+    @Operation(
+            summary = "Получить пациента по ФИО",
+            description = "Возвращает пациента по ФИО"
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Пациент с указанным ФИО"),
+            @ApiResponse(responseCode = "404", description = "Пациент не найден",
+                    content = @Content(schema = @Schema(implementation = Error.class)))
+    })
+    @GetMapping("/search")
+    public List<PatientDto> getPatientByFullName(
+            @Parameter(description = "ФИО пациента", required = true)
+            @RequestParam String fullName) {
+        log.info("Public API: Получение пациента с ФИО: {}", fullName);
+        return patientService.getPatientByFullName(fullName);
+    }
 }

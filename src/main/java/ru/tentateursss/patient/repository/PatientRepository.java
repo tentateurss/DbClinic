@@ -2,7 +2,6 @@ package ru.tentateursss.patient.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
-import ru.tentateursss.appointment.model.Appointment;
 import ru.tentateursss.patient.model.Patient;
 
 import java.util.List;
@@ -20,4 +19,6 @@ public interface PatientRepository extends JpaRepository<Patient, Long> {
     Optional<Patient> findByPhone(String phone);
 
     Optional<Patient> findByEmail(String email);
+
+    List<Patient> findByFullNameContainingIgnoreCase(String fullName);
 }

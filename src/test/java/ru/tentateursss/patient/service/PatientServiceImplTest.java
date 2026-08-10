@@ -348,4 +348,100 @@ class PatientServiceImplTest {
         verify(clinicRepository, times(1)).findById(1L);
         verify(patientRepository, never()).findByClinicId(anyLong());
     }
+
+    @Test
+    void getPatientByEmailSuccess() {
+        when(patientRepository.findByEmail("ivan@mail.ru")).thenReturn(Optional.of(patient));
+
+        PatientDto result = patientService.getPatientByEmail("ivan@mail.ru");
+
+        assertNotNull(result);
+        assertEquals("Иванов Иван Иванович", result.getFullName());
+        assertEquals("ivan@mail.ru", result.getEmail());
+
+        verify(patientRepository, times(1)).findByEmail("ivan@mail.ru");
+    }
+
+    @Test
+    void getPatientByEmailThrowsNotFoundException() {
+        when(patientRepository.findByEmail("unknown@mail.ru")).thenReturn(Optional.empty());
+
+        assertThrows(NotFoundException.class, () -> {
+            patientService.getPatientByEmail("unknown@mail.ru");
+        });
+
+        verify(patientRepository, times(1)).findByEmail("unknown@mail.ru");
+    }
+
+    @Test
+    void getPatientByPhoneSuccess() {
+        when(patientRepository.findByPhone("+79001234567")).thenReturn(Optional.of(patient));
+
+        PatientDto result = patientService.getPatientByPhone("+79001234567");
+
+        assertNotNull(result);
+        assertEquals("Иванов Иван Иванович", result.getFullName());
+        assertEquals("+79001234567", result.getPhone());
+
+        verify(patientRepository, times(1)).findByPhone("+79001234567");
+    }
+
+    @Test
+    void getPatientByPhoneThrowsNotFoundException() {
+        when(patientRepository.findByPhone("+79999999999")).thenReturn(Optional.empty());
+
+        assertThrows(NotFoundException.class, () -> {
+            patientService.getPatientByPhone("+79999999999");
+        });
+
+        verify(patientRepository, times(1)).findByPhone("+79999999999");
+    }
+
+    @Test
+    void getPatientByFullNameSuccess() {
+        when(patientRepository.findByFullNameContainingIgnoreCase("Иванов"))
+                .thenReturn(List.of(patient));
+
+        List<PatientDto> result = patientService.getPatientByFullName("Иванов");
+
+        assertNotNull(result);
+        assertEquals(1, result.size());
+        assertEquals("Иванов Иван Иванович", result.get(0).getFullName());
+
+        verify(patientRepository, times(1)).findByFullNameContainingIgnoreCase("Иванов");
+    }
+
+    @Test
+    void getPatientByFullNameReturnsMultiple() {
+        Patient patient2 = Patient.builder()
+                .id(2L)
+                .fullName("Иванов Петр Сергеевич")
+                .phone("+79009999999")
+                .email("ivanov2@mail.ru")
+                .clinic(clinic)
+                .build();
+
+        when(patientRepository.findByFullNameContainingIgnoreCase("Иванов"))
+                .thenReturn(List.of(patient, patient2));
+
+        List<PatientDto> result = patientService.getPatientByFullName("Иванов");
+
+        assertNotNull(result);
+        assertEquals(2, result.size());
+
+        verify(patientRepository, times(1)).findByFullNameContainingIgnoreCase("Иванов");
+    }
+
+    @Test
+    void getPatientByFullNameReturnsEmptyList() {
+        when(patientRepository.findByFullNameContainingIgnoreCase("Неизвестный"))
+                .thenReturn(List.of());
+
+        List<PatientDto> result = patientService.getPatientByFullName("Неизвестный");
+
+        assertNotNull(result);
+        assertTrue(result.isEmpty());
+
+        verify(patientRepository, times(1)).findByFullNameContainingIgnoreCase("Неизвестный");
+    }
 }

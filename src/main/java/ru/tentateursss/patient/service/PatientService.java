@@ -17,6 +17,12 @@ public interface PatientService {
 
     PatientDto getPatient(Long id);
 
+    PatientDto getPatientByEmail(String email);
+
+    PatientDto getPatientByPhone(String phone);
+
+    List<PatientDto> getPatientByFullName(String fullName);
+
     Page<PatientDto> getAllPatients(Pageable pageable);
 
     List<PatientDto> getAllPatientsByClinicId(Long clinicId);
