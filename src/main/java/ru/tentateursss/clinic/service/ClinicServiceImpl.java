@@ -6,17 +6,21 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.tentateursss.appointment.repository.AppointmentRepository;
 import ru.tentateursss.clinic.dto.ClinicDto;
 import ru.tentateursss.clinic.dto.NewClinicDto;
 import ru.tentateursss.clinic.mapper.ClinicMapper;
 import ru.tentateursss.clinic.model.Clinic;
 import ru.tentateursss.clinic.repository.ClinicRepository;
+import ru.tentateursss.employee.repository.EmployeeRepository;
+import ru.tentateursss.enums.AppointmentStatus;
 import ru.tentateursss.exception.ConflictException;
 import ru.tentateursss.exception.NotFoundException;
+import ru.tentateursss.exception.ValidateException;
+import ru.tentateursss.patient.repository.PatientRepository;
 import ru.tentateursss.utils.Utils;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -25,6 +29,9 @@ import java.util.stream.Collectors;
 public class ClinicServiceImpl implements ClinicService {
 
     private final ClinicRepository clinicRepository;
+    private final EmployeeRepository employeeRepository;
+    private final PatientRepository patientRepository;
+    private final AppointmentRepository appointmentRepository;
 
     @Override
     @Transactional
@@ -69,6 +76,19 @@ public class ClinicServiceImpl implements ClinicService {
     @Transactional
     public void deleteClinic(Long id) {
         Clinic clinic = clinicRepository.findById(id).orElseThrow(() -> new NotFoundException("Клиника с ID " + id + " не найдена"));
+
+        if (employeeRepository.existsByClinicId(clinic.getId())) {
+            throw new ValidateException("У клиники есть не удаленные сотрудники");
+        }
+
+        if (patientRepository.existsByClinicId(clinic.getId())) {
+            throw new ValidateException("У клиники есть не удаленные пациенты");
+        }
+
+        if (appointmentRepository.existsByClinicIdAndStatusIn(clinic.getId(), List.of(AppointmentStatus.SCHEDULED, AppointmentStatus.CONFIRMED))) {
+            throw new ValidateException("У клиники есть активные записи");
+        }
+
         clinicRepository.delete(clinic);
         log.info("Клиника с ID: {} Name: {} удалена", clinic.getId(), clinic.getName());
     }

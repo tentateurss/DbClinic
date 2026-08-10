@@ -6,10 +6,13 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.tentateursss.appointment.repository.AppointmentRepository;
 import ru.tentateursss.clinic.model.Clinic;
 import ru.tentateursss.clinic.repository.ClinicRepository;
+import ru.tentateursss.enums.AppointmentStatus;
 import ru.tentateursss.exception.ConflictException;
 import ru.tentateursss.exception.NotFoundException;
+import ru.tentateursss.exception.ValidateException;
 import ru.tentateursss.patient.dto.NewPatientDto;
 import ru.tentateursss.patient.dto.PatientDto;
 import ru.tentateursss.patient.mapper.PatientMapper;
@@ -28,6 +31,7 @@ public class PatientServiceImpl implements PatientService {
 
     private final PatientRepository patientRepository;
     private final ClinicRepository clinicRepository;
+    private final AppointmentRepository appointmentRepository;
 
     @Override
     @Transactional
@@ -83,6 +87,11 @@ public class PatientServiceImpl implements PatientService {
     public void deletePatient(Long id) {
         Patient findPatient = patientRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Пациент с ID " + id + " не найден"));
+
+        if (appointmentRepository.existsByPatientAndStatusIn(
+                findPatient, List.of(AppointmentStatus.SCHEDULED, AppointmentStatus.CONFIRMED))) {
+            throw new ValidateException("Невозможно удалить пациента с активными записями");
+        }
 
         patientRepository.delete(findPatient);
         log.info("Удален пациент с ID: {}, FullName: {}", id, findPatient.getFullName());

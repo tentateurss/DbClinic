@@ -111,4 +111,17 @@ public class PublicEmployeeController {
         log.info("Public API: получение работников клиники {} с ролью: {}", clinicId, role);
         return employeeService.getEmployeesByClinicIdAndRole(clinicId, role);
     }
+
+    @Operation(
+            summary = "Сотрудники по специализации",
+            description = "Доктора с указанной специализацией"
+    )
+    @ApiResponse(responseCode = "200", description = "Список сотрудников с указанной специализацией")
+    @GetMapping("/specialization")
+    public List<EmployeeDto> getEmployeeBySpecialization(
+            @Parameter(description = "Специализация", required = true, example = "Терапевт")
+            @RequestParam String specialization) {
+        log.info("Public API: получение работников с специализацией: {}", specialization);
+        return employeeService.getEmployeesBySpecializationContainingIgnoreCase(specialization);
+    }
 }

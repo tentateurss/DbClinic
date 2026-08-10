@@ -163,4 +163,14 @@ public class EmployeeServiceImpl implements EmployeeService {
                 .map(EmployeeMapper::toDto)
                 .collect(Collectors.toList());
     }
+
+    @Override
+    public List<EmployeeDto> getEmployeesBySpecializationContainingIgnoreCase(String specialization) {
+        List<Employee> employees = employeeRepository.findBySpecializationContainingIgnoreCase(specialization);
+
+        log.debug("Найдено {} работников со специализацией: {}", employees.size(), specialization);
+        return employees.stream()
+                .map(EmployeeMapper::toDto)
+                .collect(Collectors.toList());
+    }
 }

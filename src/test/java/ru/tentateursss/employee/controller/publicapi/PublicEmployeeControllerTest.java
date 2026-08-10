@@ -202,4 +202,31 @@ class PublicEmployeeControllerTest {
         mockMvc.perform(get("/public/employees/clinic/{clinicId}/role/{role}", 999L, EmployeeRole.DOCTOR))
                 .andExpect(status().isNotFound());
     }
+
+    @Test
+    void getEmployeesBySpecializationSuccess() throws Exception {
+        when(employeeService.getEmployeesBySpecializationContainingIgnoreCase("Терапевт"))
+                .thenReturn(List.of(employeeDto));
+
+        mockMvc.perform(get("/public/employees/specialization")
+                        .param("specialization", "Терапевт"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(1)))
+                .andExpect(jsonPath("$[0].specialization", is("Терапевт")));
+
+        verify(employeeService, times(1)).getEmployeesBySpecializationContainingIgnoreCase("Терапевт");
+    }
+
+    @Test
+    void getEmployeesBySpecializationReturnsEmptyList() throws Exception {
+        when(employeeService.getEmployeesBySpecializationContainingIgnoreCase("Хирург"))
+                .thenReturn(List.of());
+
+        mockMvc.perform(get("/public/employees/specialization")
+                        .param("specialization", "Хирург"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(0)));
+
+        verify(employeeService, times(1)).getEmployeesBySpecializationContainingIgnoreCase("Хирург");
+    }
 }

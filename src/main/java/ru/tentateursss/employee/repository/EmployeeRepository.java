@@ -17,6 +17,8 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
 
     List<Employee> findByClinicIdAndRole(Long clinicId, EmployeeRole role);
 
+    List<Employee> findBySpecializationContainingIgnoreCase(String specialization);
+
     Optional<Employee> findByEmail(String email);
 
     boolean existsByEmail(String email);
@@ -24,4 +26,6 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
     boolean existsByPhone(String phone);
 
     boolean existsByLicenseNumber(String licenseNumber);
+
+    boolean existsByClinicId(Long clinicId);
 }

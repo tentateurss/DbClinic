@@ -10,10 +10,12 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import ru.tentateursss.appointment.repository.AppointmentRepository;
 import ru.tentateursss.clinic.model.Clinic;
 import ru.tentateursss.clinic.repository.ClinicRepository;
 import ru.tentateursss.exception.ConflictException;
 import ru.tentateursss.exception.NotFoundException;
+import ru.tentateursss.exception.ValidateException;
 import ru.tentateursss.patient.dto.NewPatientDto;
 import ru.tentateursss.patient.dto.PatientDto;
 import ru.tentateursss.patient.model.Patient;
@@ -36,6 +38,9 @@ class PatientServiceImplTest {
 
     @Mock
     private ClinicRepository clinicRepository;
+
+    @Mock
+    private AppointmentRepository appointmentRepository;
 
     @InjectMocks
     private PatientServiceImpl patientService;
@@ -236,10 +241,13 @@ class PatientServiceImplTest {
     @Test
     void deletePatientSuccess() {
         when(patientRepository.findById(1L)).thenReturn(Optional.of(patient));
+        when(appointmentRepository.existsByPatientAndStatusIn(any(Patient.class), anyList()))
+                .thenReturn(false);
 
         patientService.deletePatient(1L);
 
         verify(patientRepository, times(1)).findById(1L);
+        verify(appointmentRepository, times(1)).existsByPatientAndStatusIn(any(Patient.class), anyList());
         verify(patientRepository, times(1)).delete(patient);
     }
 
@@ -443,5 +451,20 @@ class PatientServiceImplTest {
         assertTrue(result.isEmpty());
 
         verify(patientRepository, times(1)).findByFullNameContainingIgnoreCase("Неизвестный");
+    }
+
+    @Test
+    void deletePatientThrowsValidateExceptionWhenHasActiveAppointments() {
+        when(patientRepository.findById(1L)).thenReturn(Optional.of(patient));
+        when(appointmentRepository.existsByPatientAndStatusIn(any(Patient.class), anyList()))
+                .thenReturn(true);
+
+        assertThrows(ValidateException.class, () -> {
+            patientService.deletePatient(1L);
+        });
+
+        verify(patientRepository, times(1)).findById(1L);
+        verify(appointmentRepository, times(1)).existsByPatientAndStatusIn(any(Patient.class), anyList());
+        verify(patientRepository, never()).delete(any(Patient.class));
     }
 }

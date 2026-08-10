@@ -25,4 +25,6 @@ public interface EmployeeService {
     List<EmployeeDto> getEmployeesByRole(EmployeeRole role);
 
     List<EmployeeDto> getEmployeesByClinicIdAndRole(Long clinicId, EmployeeRole role);
+
+    List<EmployeeDto> getEmployeesBySpecializationContainingIgnoreCase(String specialization);
 }

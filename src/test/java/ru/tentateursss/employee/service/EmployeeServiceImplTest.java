@@ -463,4 +463,54 @@ class EmployeeServiceImplTest {
         verify(clinicRepository, times(1)).findById(1L);
         verify(employeeRepository, never()).findByClinicIdAndRole(anyLong(), any(EmployeeRole.class));
     }
+
+    @Test
+    void getEmployeesBySpecializationSuccess() {
+        when(employeeRepository.findBySpecializationContainingIgnoreCase("Терапевт"))
+                .thenReturn(List.of(employee));
+
+        List<EmployeeDto> result = employeeService.getEmployeesBySpecializationContainingIgnoreCase("Терапевт");
+
+        assertNotNull(result);
+        assertEquals(1, result.size());
+        assertEquals("Терапевт", result.get(0).getSpecialization());
+
+        verify(employeeRepository, times(1)).findBySpecializationContainingIgnoreCase("Терапевт");
+    }
+
+    @Test
+    void getEmployeesBySpecializationReturnsMultiple() {
+        Employee employee2 = Employee.builder()
+                .id(2L)
+                .fullName("Иванова Анна Сергеевна")
+                .phone("+79002223344")
+                .email("ivanova@mail.ru")
+                .role(EmployeeRole.DOCTOR)
+                .specialization("Терапевт-кардиолог")
+                .clinic(clinic)
+                .build();
+
+        when(employeeRepository.findBySpecializationContainingIgnoreCase("Терапевт"))
+                .thenReturn(List.of(employee, employee2));
+
+        List<EmployeeDto> result = employeeService.getEmployeesBySpecializationContainingIgnoreCase("Терапевт");
+
+        assertNotNull(result);
+        assertEquals(2, result.size());
+
+        verify(employeeRepository, times(1)).findBySpecializationContainingIgnoreCase("Терапевт");
+    }
+
+    @Test
+    void getEmployeesBySpecializationReturnsEmptyList() {
+        when(employeeRepository.findBySpecializationContainingIgnoreCase("Хирург"))
+                .thenReturn(List.of());
+
+        List<EmployeeDto> result = employeeService.getEmployeesBySpecializationContainingIgnoreCase("Хирург");
+
+        assertNotNull(result);
+        assertTrue(result.isEmpty());
+
+        verify(employeeRepository, times(1)).findBySpecializationContainingIgnoreCase("Хирург");
+    }
 }

@@ -10,13 +10,16 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import ru.tentateursss.appointment.repository.AppointmentRepository;
 import ru.tentateursss.clinic.dto.ClinicDto;
 import ru.tentateursss.clinic.dto.NewClinicDto;
-import ru.tentateursss.clinic.mapper.ClinicMapper;
 import ru.tentateursss.clinic.model.Clinic;
 import ru.tentateursss.clinic.repository.ClinicRepository;
+import ru.tentateursss.employee.repository.EmployeeRepository;
 import ru.tentateursss.exception.ConflictException;
 import ru.tentateursss.exception.NotFoundException;
+import ru.tentateursss.exception.ValidateException;
+import ru.tentateursss.patient.repository.PatientRepository;
 
 import java.util.List;
 import java.util.Optional;
@@ -31,6 +34,15 @@ class ClinicServiceImplTest {
 
     @Mock
     private ClinicRepository clinicRepository;
+
+    @Mock
+    private EmployeeRepository employeeRepository;
+
+    @Mock
+    private PatientRepository patientRepository;
+
+    @Mock
+    private AppointmentRepository appointmentRepository;
 
     @InjectMocks
     private ClinicServiceImpl clinicService;
@@ -145,10 +157,16 @@ class ClinicServiceImplTest {
     @Test
     void deleteClinic_Success() {
         when(clinicRepository.findById(1L)).thenReturn(Optional.of(clinic));
+        when(employeeRepository.existsByClinicId(1L)).thenReturn(false);
+        when(patientRepository.existsByClinicId(1L)).thenReturn(false);
+        when(appointmentRepository.existsByClinicIdAndStatusIn(eq(1L), anyList())).thenReturn(false);
 
         clinicService.deleteClinic(1L);
 
         verify(clinicRepository, times(1)).findById(1L);
+        verify(employeeRepository, times(1)).existsByClinicId(1L);
+        verify(patientRepository, times(1)).existsByClinicId(1L);
+        verify(appointmentRepository, times(1)).existsByClinicIdAndStatusIn(eq(1L), anyList());
         verify(clinicRepository, times(1)).delete(clinic);
     }
 
@@ -161,6 +179,54 @@ class ClinicServiceImplTest {
         });
 
         verify(clinicRepository, times(1)).findById(999L);
+        verify(clinicRepository, never()).delete(any(Clinic.class));
+    }
+
+    @Test
+    void deleteClinic_ThrowsValidateException_WhenHasEmployees() {
+        when(clinicRepository.findById(1L)).thenReturn(Optional.of(clinic));
+        when(employeeRepository.existsByClinicId(1L)).thenReturn(true);
+
+        assertThrows(ValidateException.class, () -> {
+            clinicService.deleteClinic(1L);
+        });
+
+        verify(clinicRepository, times(1)).findById(1L);
+        verify(employeeRepository, times(1)).existsByClinicId(1L);
+        verify(clinicRepository, never()).delete(any(Clinic.class));
+    }
+
+    @Test
+    void deleteClinic_ThrowsValidateException_WhenHasPatients() {
+        when(clinicRepository.findById(1L)).thenReturn(Optional.of(clinic));
+        when(employeeRepository.existsByClinicId(1L)).thenReturn(false);
+        when(patientRepository.existsByClinicId(1L)).thenReturn(true);
+
+        assertThrows(ValidateException.class, () -> {
+            clinicService.deleteClinic(1L);
+        });
+
+        verify(clinicRepository, times(1)).findById(1L);
+        verify(employeeRepository, times(1)).existsByClinicId(1L);
+        verify(patientRepository, times(1)).existsByClinicId(1L);
+        verify(clinicRepository, never()).delete(any(Clinic.class));
+    }
+
+    @Test
+    void deleteClinic_ThrowsValidateException_WhenHasActiveAppointments() {
+        when(clinicRepository.findById(1L)).thenReturn(Optional.of(clinic));
+        when(employeeRepository.existsByClinicId(1L)).thenReturn(false);
+        when(patientRepository.existsByClinicId(1L)).thenReturn(false);
+        when(appointmentRepository.existsByClinicIdAndStatusIn(eq(1L), anyList())).thenReturn(true);
+
+        assertThrows(ValidateException.class, () -> {
+            clinicService.deleteClinic(1L);
+        });
+
+        verify(clinicRepository, times(1)).findById(1L);
+        verify(employeeRepository, times(1)).existsByClinicId(1L);
+        verify(patientRepository, times(1)).existsByClinicId(1L);
+        verify(appointmentRepository, times(1)).existsByClinicIdAndStatusIn(eq(1L), anyList());
         verify(clinicRepository, never()).delete(any(Clinic.class));
     }
 
