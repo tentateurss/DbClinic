@@ -6,6 +6,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.tentateursss.appointment.repository.AppointmentRepository;
 import ru.tentateursss.clinic.model.Clinic;
 import ru.tentateursss.clinic.repository.ClinicRepository;
 import ru.tentateursss.employee.dto.EmployeeDto;
@@ -13,9 +14,11 @@ import ru.tentateursss.employee.dto.NewEmployeeDto;
 import ru.tentateursss.employee.mapper.EmployeeMapper;
 import ru.tentateursss.employee.model.Employee;
 import ru.tentateursss.employee.repository.EmployeeRepository;
+import ru.tentateursss.enums.AppointmentStatus;
 import ru.tentateursss.enums.EmployeeRole;
 import ru.tentateursss.exception.ConflictException;
 import ru.tentateursss.exception.NotFoundException;
+import ru.tentateursss.exception.ValidateException;
 import ru.tentateursss.utils.Utils;
 
 import java.util.List;
@@ -27,6 +30,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class EmployeeServiceImpl implements EmployeeService {
 
+    private final AppointmentRepository appointmentRepository;
     private final EmployeeRepository employeeRepository;
     private final ClinicRepository clinicRepository;
 
@@ -95,6 +99,12 @@ public class EmployeeServiceImpl implements EmployeeService {
     public void deleteEmployee(Long id) {
         Employee findEmployee = employeeRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Работник с ID " + id + " не найден"));
+
+        if (findEmployee.getRole().equals(EmployeeRole.DOCTOR)
+                && appointmentRepository.existsByEmployeeAndStatusIn(
+                findEmployee, List.of(AppointmentStatus.SCHEDULED, AppointmentStatus.CONFIRMED))) {
+            throw new ValidateException("Невозможно удалить доктора с активными записями");
+        }
 
         employeeRepository.delete(findEmployee);
         log.info("Удален работник с ID: {}, FullName: {}", id, findEmployee.getFullName());

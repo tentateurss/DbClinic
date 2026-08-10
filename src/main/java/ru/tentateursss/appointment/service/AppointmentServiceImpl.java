@@ -15,8 +15,10 @@ import ru.tentateursss.clinic.repository.ClinicRepository;
 import ru.tentateursss.employee.model.Employee;
 import ru.tentateursss.employee.repository.EmployeeRepository;
 import ru.tentateursss.enums.AppointmentStatus;
+import ru.tentateursss.exception.ConflictException;
 import ru.tentateursss.exception.DateTimeConflict;
 import ru.tentateursss.exception.NotFoundException;
+import ru.tentateursss.exception.ValidateException;
 import ru.tentateursss.medicalservice.model.MedicalService;
 import ru.tentateursss.medicalservice.repository.MedicalServiceRepository;
 import ru.tentateursss.patient.model.Patient;
@@ -25,6 +27,7 @@ import ru.tentateursss.patient.repository.PatientRepository;
 import org.springframework.data.domain.Pageable;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -58,6 +61,18 @@ public class AppointmentServiceImpl implements AppointmentService {
 
         if (!isTimeSlotAvailable(employee.getId(), startTime, medicalService.getDurationMinutes())) {
             throw new DateTimeConflict("Время занято");
+        }
+
+        if (!Objects.equals(employee.getClinic().getId(), clinic.getId())) {
+            throw new ValidateException("Сотрудник не работает в этой клинике");
+        }
+
+        if (!Objects.equals(medicalService.getClinic().getId(), clinic.getId())) {
+            throw new ValidateException("Услуга не предоставляется в этой клинике");
+        }
+
+        if (!Objects.equals(patient.getClinic().getId(), clinic.getId())) {
+            throw new ValidateException("Невозможно записать клиента из другой клиники");
         }
 
         Appointment newAppointment = AppointmentMapper.toEntity(dto, patient, employee, clinic, medicalService);

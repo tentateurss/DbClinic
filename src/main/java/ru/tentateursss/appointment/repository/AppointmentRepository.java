@@ -3,6 +3,7 @@ package ru.tentateursss.appointment.repository;
 import ru.tentateursss.appointment.model.Appointment;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
+import ru.tentateursss.employee.model.Employee;
 import ru.tentateursss.enums.AppointmentStatus;
 
 import java.time.LocalDateTime;
@@ -37,6 +38,8 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
     List<Appointment> findByEmployeeIdAndDateTimeBetween(Long employeeId, LocalDateTime start, LocalDateTime end);
 
     List<Appointment> findByPatientIdAndDateTimeBetween(Long patientId, LocalDateTime start, LocalDateTime end);
+
+    boolean existsByEmployeeAndStatusIn(Employee employee, List<AppointmentStatus> statuses);
 
     boolean existsByEmployeeIdAndDateTime(Long employeeId, LocalDateTime dateTime);
 

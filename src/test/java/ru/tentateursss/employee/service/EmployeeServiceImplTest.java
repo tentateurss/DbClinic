@@ -10,6 +10,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import ru.tentateursss.appointment.repository.AppointmentRepository;
 import ru.tentateursss.clinic.model.Clinic;
 import ru.tentateursss.clinic.repository.ClinicRepository;
 import ru.tentateursss.employee.dto.EmployeeDto;
@@ -19,6 +20,7 @@ import ru.tentateursss.employee.repository.EmployeeRepository;
 import ru.tentateursss.enums.EmployeeRole;
 import ru.tentateursss.exception.ConflictException;
 import ru.tentateursss.exception.NotFoundException;
+import ru.tentateursss.exception.ValidateException;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -38,6 +40,9 @@ class EmployeeServiceImplTest {
 
     @Mock
     private ClinicRepository clinicRepository;
+
+    @Mock
+    private AppointmentRepository appointmentRepository;
 
     @InjectMocks
     private EmployeeServiceImpl employeeService;
@@ -260,11 +265,28 @@ class EmployeeServiceImplTest {
     @Test
     void deleteEmployeeSuccess() {
         when(employeeRepository.findById(1L)).thenReturn(Optional.of(employee));
+        when(appointmentRepository.existsByEmployeeAndStatusIn(any(Employee.class), anyList()))
+                .thenReturn(false);
 
         employeeService.deleteEmployee(1L);
 
         verify(employeeRepository, times(1)).findById(1L);
+        verify(appointmentRepository, times(1)).existsByEmployeeAndStatusIn(any(Employee.class), anyList());
         verify(employeeRepository, times(1)).delete(employee);
+    }
+
+    @Test
+    void deleteEmployeeThrowsValidateExceptionWhenDoctorHasActiveAppointments() {
+        when(employeeRepository.findById(1L)).thenReturn(Optional.of(employee));
+        when(appointmentRepository.existsByEmployeeAndStatusIn(any(Employee.class), anyList()))
+                .thenReturn(true);
+
+        assertThrows(ValidateException.class, () -> {
+            employeeService.deleteEmployee(1L);
+        });
+
+        verify(employeeRepository, times(1)).findById(1L);
+        verify(employeeRepository, never()).delete(any(Employee.class));
     }
 
     @Test
