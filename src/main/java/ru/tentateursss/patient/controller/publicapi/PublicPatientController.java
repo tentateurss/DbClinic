@@ -9,8 +9,10 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.hibernate.query.SortDirection;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.tentateursss.patient.dto.PatientDto;
@@ -48,8 +50,8 @@ public class PublicPatientController {
     }
 
     @Operation(
-            summary = "Получить список всех пациентов с пагинацией",
-            description = "Возвращает список всех пациентов всех клиник постранично. По умолчанию 20 пациентов на странице"
+            summary = "Получить список всех пациентов с пагинацией и сортировкой",
+            description = "Возвращает список всех пациентов всех клиник постранично. По умолчанию 20 пациентов на странице. Сортировка: поле,направление"
     )
     @ApiResponse(responseCode = "200", description = "Страница со списком пациентов")
     @GetMapping
@@ -57,9 +59,14 @@ public class PublicPatientController {
             @Parameter(description = "Номер страницы (начиная с 0)", example = "0")
             @RequestParam(defaultValue = "0") int page,
             @Parameter(description = "Количество пациентов на странице", example = "20")
-            @RequestParam(defaultValue = "20") int size) {
-        log.info("Public API: Получение всех пациентов (страница {}, размер {})", page, size);
-        return patientService.getAllPatients(PageRequest.of(page, size));
+            @RequestParam(defaultValue = "20") int size,
+            @Parameter(description = "Сортировка в формате поле,направление (например, fullName,asc или registrationDate,desc)", example = "fullName,asc")
+            @RequestParam(defaultValue = "fullName,asc") String sort) {
+        log.info("Public API: Получение всех пациентов (страница {}, размер {}, сортировка {})", page, size, sort);
+        String[] parts = sort.split(",");
+        String field = parts[0];
+        Sort.Direction direction = Sort.Direction.fromString(parts[1]);
+        return patientService.getAllPatients(PageRequest.of(page, size, Sort.by(direction, field)));
     }
 
     @Operation(

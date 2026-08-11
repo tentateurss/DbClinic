@@ -11,13 +11,12 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.tentateursss.clinic.dto.ClinicDto;
 import ru.tentateursss.clinic.service.ClinicService;
 import ru.tentateursss.exception.Error;
-
-import java.util.List;
 
 @Slf4j
 @RestController
@@ -48,8 +47,8 @@ public class PublicClinicController {
     }
 
     @Operation(
-            summary = "Получить список всех клиник с пагинацией",
-            description = "Возвращает клиники постранично. По умолчанию 20 клиник на странице"
+            summary = "Получить список всех клиник с пагинацией и сортировкой",
+            description = "Возвращает клиники постранично. По умолчанию 20 клиник на странице. Сортировка: поле,направление"
     )
     @ApiResponse(responseCode = "200", description = "Страница с клиниками")
     @GetMapping
@@ -57,8 +56,13 @@ public class PublicClinicController {
             @Parameter(description = "Номер страницы (начиная с 0)", example = "0")
             @RequestParam(defaultValue = "0") int page,
             @Parameter(description = "Количество клиник на странице", example = "20")
-            @RequestParam(defaultValue = "20") int size) {
-        log.info("Public API: Получение всех клиник (страница {}, размер {})", page, size);
-        return clinicService.getAllClinics(PageRequest.of(page, size));
+            @RequestParam(defaultValue = "20") int size,
+            @Parameter(description = "Сортировка в формате поле,направление (например, name,asc или createdAt,desc)", example = "name,asc")
+            @RequestParam(defaultValue = "name,asc") String sort) {
+        log.info("Public API: Получение всех клиник (страница {}, размер {}, сортировка {})", page, size, sort);
+        String[] parts = sort.split(",");
+        String field = parts[0];
+        Sort.Direction direction = Sort.Direction.fromString(parts[1]);
+        return clinicService.getAllClinics(PageRequest.of(page, size, Sort.by(direction, field)));
     }
 }

@@ -10,16 +10,17 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
+import ru.tentateursss.appointment.repository.AppointmentRepository;
 import ru.tentateursss.clinic.dto.ClinicDto;
 import ru.tentateursss.clinic.dto.NewClinicDto;
-import ru.tentateursss.clinic.service.ClinicService;
+import ru.tentateursss.clinic.service.ClinicServiceImpl;
+import ru.tentateursss.employee.repository.EmployeeRepository;
 import ru.tentateursss.exception.ConflictException;
 import ru.tentateursss.exception.NotFoundException;
+import ru.tentateursss.patient.repository.PatientRepository;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
-import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -43,7 +44,16 @@ class AdminClinicControllerTest {
     private MockMvc mockMvc;
 
     @MockBean
-    private ClinicService clinicService;
+    private ClinicServiceImpl clinicService;
+
+    @MockBean
+    private EmployeeRepository employeeRepository;
+
+    @MockBean
+    private PatientRepository patientRepository;
+
+    @MockBean
+    private AppointmentRepository appointmentRepository;
 
     @Autowired
     private ObjectMapper objectMapper;

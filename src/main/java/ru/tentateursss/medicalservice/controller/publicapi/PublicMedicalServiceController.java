@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.tentateursss.medicalservice.dto.MedicalServiceDto;
@@ -47,8 +48,8 @@ public class PublicMedicalServiceController {
     }
 
     @Operation(
-            summary = "Получить список всех услуг с пагинацией",
-            description = "Возвращает все медицинские услуги во всех клиниках постранично. По умолчанию 20 услуг на странице"
+            summary = "Получить список всех услуг с пагинацией и сортировкой",
+            description = "Возвращает все медицинские услуги во всех клиниках постранично. По умолчанию 20 услуг на странице. Сортировка: поле,направление"
     )
     @ApiResponse(responseCode = "200", description = "Страница со списком услуг")
     @GetMapping
@@ -56,9 +57,14 @@ public class PublicMedicalServiceController {
             @Parameter(description = "Номер страницы (начиная с 0)", example = "0")
             @RequestParam(defaultValue = "0") int page,
             @Parameter(description = "Количество услуг на странице", example = "20")
-            @RequestParam(defaultValue = "20") int size) {
-        log.info("Public API: получение всех услуг (страница {}, размер {})", page, size);
-        return service.findAllMedicalService(PageRequest.of(page, size));
+            @RequestParam(defaultValue = "20") int size,
+            @Parameter(description = "Сортировка в формате поле,направление (например, title,asc или cost,desc)", example = "title,asc")
+            @RequestParam(defaultValue = "title,asc") String sort) {
+        log.info("Public API: получение всех услуг (страница {}, размер {}, сортировка {})", page, size, sort);
+        String[] parts = sort.split(",");
+        String field = parts[0];
+        Sort.Direction direction = Sort.Direction.fromString(parts[1]);
+        return service.findAllMedicalService(PageRequest.of(page, size, Sort.by(direction, field)));
     }
 
     @Operation(
