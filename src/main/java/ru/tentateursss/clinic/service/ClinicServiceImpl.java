@@ -2,6 +2,8 @@ package ru.tentateursss.clinic.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -35,6 +37,7 @@ public class ClinicServiceImpl implements ClinicService {
 
     @Override
     @Transactional
+    @CacheEvict("clinics")
     public ClinicDto createClinic(NewClinicDto dto) {
         if (clinicRepository.existsByInn(dto.getInn())) {
             throw new ConflictException("Клиника с ИНН " + dto.getInn() + " уже существует");
@@ -59,6 +62,7 @@ public class ClinicServiceImpl implements ClinicService {
 
     @Override
     @Transactional
+    @CacheEvict("clinics")
     public ClinicDto updateClinic(Long id, NewClinicDto dto) {
         Clinic clinic = clinicRepository.findById(id).orElseThrow(() -> new NotFoundException("Клиника с ID " + id + " не найдена"));
 
@@ -74,6 +78,7 @@ public class ClinicServiceImpl implements ClinicService {
 
     @Override
     @Transactional
+    @CacheEvict("clinics")
     public void deleteClinic(Long id) {
         Clinic clinic = clinicRepository.findById(id).orElseThrow(() -> new NotFoundException("Клиника с ID " + id + " не найдена"));
 
@@ -101,6 +106,7 @@ public class ClinicServiceImpl implements ClinicService {
     }
 
     @Override
+    @Cacheable("clinics")
     public Page<ClinicDto> getAllClinics(Pageable pageable) {
         Page<Clinic> clinics = clinicRepository.findAll(pageable);
         log.info("Получение всех клиник (страница {}, размер {})",
