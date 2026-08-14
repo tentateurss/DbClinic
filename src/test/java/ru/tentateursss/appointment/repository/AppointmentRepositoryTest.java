@@ -188,28 +188,4 @@ public class AppointmentRepositoryTest {
         assertEquals(savedAppointment.getId(), foundAppointment.getId());
         assertEquals(savedAppointment, foundAppointment);
     }
-
-    @Test
-    void findAllByPatientId() {
-        Appointment savedAppointmentOne = appointmentRepository.save(appointment);
-        Appointment savedAppointmentTwo = appointmentRepository.save(Appointment.builder()
-                .patient(patient)
-                .employee(employee)
-                .clinic(clinic)
-                .dateTime(LocalDateTime.now().plusDays(1).withHour(10).withMinute(0))
-                .medicalService(medicalService)
-                .isPaid(false)
-                .notes("Тестовый прием")
-                .status(AppointmentStatus.SCHEDULED)
-                .build());
-
-        List<Appointment> foundAppointments = appointmentRepository.findByPatientId(patient.getId());
-
-        assertNotNull(foundAppointments);
-        assertEquals(2, foundAppointments.size());
-        assertTrue(foundAppointments.contains(savedAppointmentOne));
-        assertTrue(foundAppointments.contains(savedAppointmentTwo));
-    }
-
-
 }

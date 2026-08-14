@@ -15,7 +15,6 @@ import ru.tentateursss.clinic.repository.ClinicRepository;
 import ru.tentateursss.employee.model.Employee;
 import ru.tentateursss.employee.repository.EmployeeRepository;
 import ru.tentateursss.enums.AppointmentStatus;
-import ru.tentateursss.exception.ConflictException;
 import ru.tentateursss.exception.DateTimeConflict;
 import ru.tentateursss.exception.NotFoundException;
 import ru.tentateursss.exception.ValidateException;
@@ -28,7 +27,6 @@ import org.springframework.data.domain.Pageable;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -149,84 +147,66 @@ public class AppointmentServiceImpl implements AppointmentService {
     }
 
     @Override
-    public List<AppointmentDto> getAppointmentsByPatientId(Long patientId) {
-        List<Appointment> appointments = appointmentRepository.findByPatientId(patientId);
-
-        return appointments.stream()
-                .map(AppointmentMapper::toDto)
-                .collect(Collectors.toList());
+    public Page<AppointmentDto> getAppointmentsByPatientId(Long patientId, Pageable pageable) {
+        return appointmentRepository.findByPatientId(patientId, pageable)
+                .map(AppointmentMapper::toDto);
     }
 
     @Override
-    public List<AppointmentDto> getAppointmentsByEmployeeId(Long employeeId) {
-        List<Appointment> appointments = appointmentRepository.findByEmployeeId(employeeId);
-
-        return appointments.stream()
-                .map(AppointmentMapper::toDto)
-                .collect(Collectors.toList());
+    public Page<AppointmentDto> getAppointmentsByEmployeeId(Long employeeId, Pageable pageable) {
+        return appointmentRepository.findByEmployeeId(employeeId, pageable)
+                .map(AppointmentMapper::toDto);
     }
 
     @Override
-    public List<AppointmentDto> getAppointmentsByClinicId(Long clinicId) {
-        List<Appointment> appointments = appointmentRepository.findByClinicId(clinicId);
-
-        return appointments.stream()
-                .map(AppointmentMapper::toDto)
-                .collect(Collectors.toList());
+    public Page<AppointmentDto> getAppointmentsByClinicId(Long clinicId, Pageable pageable) {
+        return appointmentRepository.findByClinicId(clinicId, pageable)
+                .map(AppointmentMapper::toDto);
     }
 
     @Override
-    public List<AppointmentDto> getAppointmentsByMedicalServiceId(Long medicalServiceId) {
-        List<Appointment> appointments = appointmentRepository.findByMedicalServiceId(medicalServiceId);
-
-        return appointments.stream()
-                .map(AppointmentMapper::toDto)
-                .collect(Collectors.toList());
+    public Page<AppointmentDto> getAppointmentsByMedicalServiceId(Long medicalServiceId, Pageable pageable) {
+        return appointmentRepository.findByMedicalServiceId(medicalServiceId, pageable)
+                .map(AppointmentMapper::toDto);
     }
 
     @Override
-    public List<AppointmentDto> getAppointmentsByStatus(AppointmentStatus status) {
-        List<Appointment> appointments = appointmentRepository.findByStatus(status);
-
-        return appointments.stream()
-                .map(AppointmentMapper::toDto)
-                .collect(Collectors.toList());
+    public Page<AppointmentDto> getAppointmentsByStatus(AppointmentStatus status, Pageable pageable) {
+        return appointmentRepository.findByStatus(status, pageable)
+                .map(AppointmentMapper::toDto);
     }
 
     @Override
-    public List<AppointmentDto> getAppointmentsByPatientIdAndStatus(Long patientId, AppointmentStatus status) {
-        List<Appointment> appointments = appointmentRepository.findByPatientIdAndStatus(patientId, status);
-
-        return appointments.stream()
-                .map(AppointmentMapper::toDto)
-                .collect(Collectors.toList());
+    public Page<AppointmentDto> getAppointmentsByStatuses(List<AppointmentStatus> statuses, Pageable pageable) {
+        Page<AppointmentDto> result = appointmentRepository.findByStatusIn(statuses, pageable)
+                .map(AppointmentMapper::toDto);
+        log.debug("Получение записей со статусами: {} (страница {}, размер {})",
+                statuses, pageable.getPageNumber(), pageable.getPageSize());
+        return result;
     }
 
     @Override
-    public List<AppointmentDto> getAppointmentsByEmployeeIdAndStatus(Long employeeId, AppointmentStatus status) {
-        List<Appointment> appointments = appointmentRepository.findByEmployeeIdAndStatus(employeeId, status);
-
-        return appointments.stream()
-                .map(AppointmentMapper::toDto)
-                .collect(Collectors.toList());
+    public Page<AppointmentDto> getAppointmentsByPatientIdAndStatus(Long patientId, AppointmentStatus status, Pageable pageable) {
+        return appointmentRepository.findByPatientIdAndStatus(patientId, status, pageable)
+                .map(AppointmentMapper::toDto);
     }
 
     @Override
-    public List<AppointmentDto> getAppointmentsByDateRange(LocalDateTime start, LocalDateTime end) {
-        List<Appointment> appointments = appointmentRepository.findByDateTimeBetween(start, end);
-
-        return appointments.stream()
-                .map(AppointmentMapper::toDto)
-                .collect(Collectors.toList());
+    public Page<AppointmentDto> getAppointmentsByEmployeeIdAndStatus(Long employeeId, AppointmentStatus status, Pageable pageable) {
+        return appointmentRepository.findByEmployeeIdAndStatus(employeeId, status, pageable)
+                .map(AppointmentMapper::toDto);
     }
 
     @Override
-    public List<AppointmentDto> getAppointmentsByEmployeeAndDateRange(Long employeeId, LocalDateTime start, LocalDateTime end) {
-        List<Appointment> appointments = appointmentRepository.findByEmployeeIdAndDateTimeBetween(employeeId, start, end);
+    public Page<AppointmentDto> getAppointmentsByDateRange(LocalDateTime start, LocalDateTime end, Pageable pageable) {
+        return appointmentRepository.findByDateTimeBetween(start, end, pageable)
+                .map(AppointmentMapper::toDto);
+    }
 
-        return appointments.stream()
-                .map(AppointmentMapper::toDto)
-                .collect(Collectors.toList());
+    @Override
+    public Page<AppointmentDto> getAppointmentsByEmployeeAndDateRange(Long employeeId, LocalDateTime start, LocalDateTime end, Pageable pageable) {
+        return appointmentRepository.findByEmployeeIdAndDateTimeBetween(employeeId, start, end, pageable)
+                .map(AppointmentMapper::toDto);
     }
 
     @Override

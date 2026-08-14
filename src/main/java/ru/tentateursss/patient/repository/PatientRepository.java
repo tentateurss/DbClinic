@@ -1,5 +1,7 @@
 package ru.tentateursss.patient.repository;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 import ru.tentateursss.patient.model.Patient;
@@ -10,7 +12,7 @@ import java.util.Optional;
 @Repository
 public interface PatientRepository extends JpaRepository<Patient, Long> {
 
-    List<Patient> findByClinicId(Long clinicId);
+    Page<Patient> findByClinicId(Long clinicId, Pageable pageable);
 
     boolean existsByPhone(String phone);
 
@@ -24,5 +26,5 @@ public interface PatientRepository extends JpaRepository<Patient, Long> {
 
     Optional<Patient> findByEmail(String email);
 
-    List<Patient> findByFullNameContainingIgnoreCase(String fullName);
+    Page<Patient> findByFullNameContainingIgnoreCase(String fullName, Pageable pageable);
 }

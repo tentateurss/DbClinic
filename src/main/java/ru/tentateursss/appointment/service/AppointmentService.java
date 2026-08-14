@@ -6,6 +6,7 @@ import ru.tentateursss.appointment.dto.NewAppointmentDto;
 import ru.tentateursss.enums.AppointmentStatus;
 
 import org.springframework.data.domain.Pageable;
+
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -21,23 +22,25 @@ public interface AppointmentService {
 
     Page<AppointmentDto> getAllAppointments(Pageable pageable);
 
-    List<AppointmentDto> getAppointmentsByPatientId(Long patientId);
+    Page<AppointmentDto> getAppointmentsByPatientId(Long patientId, Pageable pageable);
 
-    List<AppointmentDto> getAppointmentsByEmployeeId(Long employeeId);
+    Page<AppointmentDto> getAppointmentsByEmployeeId(Long employeeId, Pageable pageable);
 
-    List<AppointmentDto> getAppointmentsByClinicId(Long clinicId);
+    Page<AppointmentDto> getAppointmentsByClinicId(Long clinicId, Pageable pageable);
 
-    List<AppointmentDto> getAppointmentsByMedicalServiceId(Long medicalServiceId);
+    Page<AppointmentDto> getAppointmentsByMedicalServiceId(Long medicalServiceId, Pageable pageable);
 
-    List<AppointmentDto> getAppointmentsByStatus(AppointmentStatus status);
+    Page<AppointmentDto> getAppointmentsByStatus(AppointmentStatus status, Pageable pageable);
 
-    List<AppointmentDto> getAppointmentsByPatientIdAndStatus(Long patientId, AppointmentStatus status);
+    Page<AppointmentDto> getAppointmentsByStatuses(List<AppointmentStatus> statuses, Pageable pageable);
 
-    List<AppointmentDto> getAppointmentsByEmployeeIdAndStatus(Long employeeId, AppointmentStatus status);
+    Page<AppointmentDto> getAppointmentsByPatientIdAndStatus(Long patientId, AppointmentStatus status, Pageable pageable);
 
-    List<AppointmentDto> getAppointmentsByDateRange(LocalDateTime start, LocalDateTime end);
+    Page<AppointmentDto> getAppointmentsByEmployeeIdAndStatus(Long employeeId, AppointmentStatus status, Pageable pageable);
 
-    List<AppointmentDto> getAppointmentsByEmployeeAndDateRange(Long employeeId, LocalDateTime start, LocalDateTime end);
+    Page<AppointmentDto> getAppointmentsByDateRange(LocalDateTime start, LocalDateTime end, Pageable pageable);
+
+    Page<AppointmentDto> getAppointmentsByEmployeeAndDateRange(Long employeeId, LocalDateTime start, LocalDateTime end, Pageable pageable);
 
     AppointmentDto confirmAppointment(Long appointmentId);
 

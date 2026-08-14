@@ -40,11 +40,17 @@ public class PublicMedicalServiceController {
                     content = @Content(schema = @Schema(implementation = Error.class)))
     })
     @GetMapping("/clinic/{clinicId}")
-    public List<MedicalServiceDto> findMedicalServiceByClinicId(
+    public Page<MedicalServiceDto> findMedicalServiceByClinicId(
             @Parameter(description = "ID клиники", required = true, example = "1")
-            @PathVariable Long clinicId) {
+            @PathVariable Long clinicId,
+            @Parameter(description = "Номер страницы (начиная с 0)", example = "0")
+            @RequestParam(defaultValue = "0") int page,
+            @Parameter(description = "Количество услуг на странице", example = "20")
+            @RequestParam(defaultValue = "20") int size,
+            @Parameter(description = "Сортировка в формате поле,направление", example = "title,asc")
+            @RequestParam(defaultValue = "title,asc") String sort) {
         log.info("Public API: получение всех услуг в клинике с ID: {}", clinicId);
-        return service.findMedicalServiceByClinicId(clinicId);
+        return service.findMedicalServiceByClinicId(clinicId, parsePageRequest(page, size, sort));
     }
 
     @Operation(
@@ -83,5 +89,12 @@ public class PublicMedicalServiceController {
             @PathVariable Long msId) {
         log.info("Public API: получение услуги с ID: {}", msId);
         return service.findMedicalServiceById(msId);
+    }
+
+    private PageRequest parsePageRequest(int page, int size, String sort) {
+        String[] parts = sort.split(",");
+        String field = parts[0];
+        Sort.Direction direction = Sort.Direction.fromString(parts[1]);
+        return PageRequest.of(page, size, Sort.by(direction, field));
     }
 }

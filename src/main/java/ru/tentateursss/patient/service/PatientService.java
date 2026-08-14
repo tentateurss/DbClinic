@@ -5,8 +5,6 @@ import org.springframework.data.domain.Pageable;
 import ru.tentateursss.patient.dto.NewPatientDto;
 import ru.tentateursss.patient.dto.PatientDto;
 
-import java.util.List;
-
 public interface PatientService {
 
     PatientDto createPatient(NewPatientDto dto);
@@ -21,9 +19,9 @@ public interface PatientService {
 
     PatientDto getPatientByPhone(String phone);
 
-    List<PatientDto> getPatientByFullName(String fullName);
+    Page<PatientDto> getPatientByFullName(String fullName, Pageable pageable);
 
     Page<PatientDto> getAllPatients(Pageable pageable);
 
-    List<PatientDto> getAllPatientsByClinicId(Long clinicId);
+    Page<PatientDto> getAllPatientsByClinicId(Long clinicId, Pageable pageable);
 }

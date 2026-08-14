@@ -125,13 +125,10 @@ public class PatientServiceImpl implements PatientService {
     }
 
     @Override
-    public List<PatientDto> getPatientByFullName(String fullName) {
-        List<Patient> findPatients = patientRepository.findByFullNameContainingIgnoreCase(fullName);
-
+    public Page<PatientDto> getPatientByFullName(String fullName, Pageable pageable) {
+        Page<Patient> patients = patientRepository.findByFullNameContainingIgnoreCase(fullName, pageable);
         log.debug("Получение пациентов с ФИО: {}", fullName);
-        return findPatients.stream()
-                .map(PatientMapper::toDto)
-                .collect(Collectors.toList());
+        return patients.map(PatientMapper::toDto);
     }
 
     @Override
@@ -143,15 +140,12 @@ public class PatientServiceImpl implements PatientService {
     }
 
     @Override
-    public List<PatientDto> getAllPatientsByClinicId(Long clinicId) {
+    public Page<PatientDto> getAllPatientsByClinicId(Long clinicId, Pageable pageable) {
         clinicRepository.findById(clinicId)
                 .orElseThrow(() -> new NotFoundException("Клиника с ID " + clinicId + " не найдена"));
 
-        List<Patient> patients = patientRepository.findByClinicId(clinicId);
-
-        log.debug("Найдено {} пациентов для клиники с ID: {}", patients.size(), clinicId);
-        return patients.stream()
-                .map(PatientMapper::toDto)
-                .collect(Collectors.toList());
+        Page<Patient> patients = patientRepository.findByClinicId(clinicId, pageable);
+        log.debug("Найдено {} пациентов для клиники с ID: {}", patients.getTotalElements(), clinicId);
+        return patients.map(PatientMapper::toDto);
     }
 }

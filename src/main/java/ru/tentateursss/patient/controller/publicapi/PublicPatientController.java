@@ -9,7 +9,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.hibernate.query.SortDirection;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -18,8 +17,6 @@ import org.springframework.web.bind.annotation.*;
 import ru.tentateursss.patient.dto.PatientDto;
 import ru.tentateursss.patient.service.PatientService;
 import ru.tentateursss.exception.Error;
-
-import java.util.List;
 
 @Slf4j
 @RestController
@@ -63,15 +60,12 @@ public class PublicPatientController {
             @Parameter(description = "Сортировка в формате поле,направление (например, fullName,asc или registrationDate,desc)", example = "fullName,asc")
             @RequestParam(defaultValue = "fullName,asc") String sort) {
         log.info("Public API: Получение всех пациентов (страница {}, размер {}, сортировка {})", page, size, sort);
-        String[] parts = sort.split(",");
-        String field = parts[0];
-        Sort.Direction direction = Sort.Direction.fromString(parts[1]);
-        return patientService.getAllPatients(PageRequest.of(page, size, Sort.by(direction, field)));
+        return patientService.getAllPatients(parsePageRequest(page, size, sort));
     }
 
     @Operation(
             summary = "Пациенты конкретной клиники",
-            description = "Возвращает список всех пациентов, прикреплённых к указанной клинике"
+            description = "Возвращает список всех пациентов, прикреплённых к указанной клинике, с пагинацией"
     )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Список пациентов клиники (может быть пустым)"),
@@ -79,11 +73,17 @@ public class PublicPatientController {
                     content = @Content(schema = @Schema(implementation = Error.class)))
     })
     @GetMapping("/clinic/{clinicId}")
-    public List<PatientDto> getPatientsByClinic(
+    public Page<PatientDto> getPatientsByClinic(
             @Parameter(description = "ID клиники", required = true, example = "1")
-            @PathVariable Long clinicId) {
+            @PathVariable Long clinicId,
+            @Parameter(description = "Номер страницы (начиная с 0)", example = "0")
+            @RequestParam(defaultValue = "0") int page,
+            @Parameter(description = "Количество пациентов на странице", example = "20")
+            @RequestParam(defaultValue = "20") int size,
+            @Parameter(description = "Сортировка в формате поле,направление", example = "fullName,asc")
+            @RequestParam(defaultValue = "fullName,asc") String sort) {
         log.info("Public API: Получение пациентов из клиники: {}", clinicId);
-        return patientService.getAllPatientsByClinicId(clinicId);
+        return patientService.getAllPatientsByClinicId(clinicId, parsePageRequest(page, size, sort));
     }
 
     @Operation(
@@ -121,19 +121,32 @@ public class PublicPatientController {
     }
 
     @Operation(
-            summary = "Получить пациента по ФИО",
-            description = "Возвращает пациента по ФИО"
+            summary = "Поиск пациентов по ФИО",
+            description = "Возвращает пациентов, чьё ФИО содержит указанную строку, с пагинацией"
     )
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Пациент с указанным ФИО"),
-            @ApiResponse(responseCode = "404", description = "Пациент не найден",
+            @ApiResponse(responseCode = "200", description = "Пациенты с указанным ФИО"),
+            @ApiResponse(responseCode = "404", description = "Пациенты не найдены",
                     content = @Content(schema = @Schema(implementation = Error.class)))
     })
     @GetMapping("/search")
-    public List<PatientDto> getPatientByFullName(
+    public Page<PatientDto> getPatientByFullName(
             @Parameter(description = "ФИО пациента", required = true)
-            @RequestParam String fullName) {
+            @RequestParam String fullName,
+            @Parameter(description = "Номер страницы (начиная с 0)", example = "0")
+            @RequestParam(defaultValue = "0") int page,
+            @Parameter(description = "Количество пациентов на странице", example = "20")
+            @RequestParam(defaultValue = "20") int size,
+            @Parameter(description = "Сортировка в формате поле,направление", example = "fullName,asc")
+            @RequestParam(defaultValue = "fullName,asc") String sort) {
         log.info("Public API: Получение пациента с ФИО: {}", fullName);
-        return patientService.getPatientByFullName(fullName);
+        return patientService.getPatientByFullName(fullName, parsePageRequest(page, size, sort));
+    }
+
+    private PageRequest parsePageRequest(int page, int size, String sort) {
+        String[] parts = sort.split(",");
+        String field = parts[0];
+        Sort.Direction direction = Sort.Direction.fromString(parts[1]);
+        return PageRequest.of(page, size, Sort.by(direction, field));
     }
 }

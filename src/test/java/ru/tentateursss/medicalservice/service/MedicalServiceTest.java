@@ -178,31 +178,35 @@ public class MedicalServiceTest {
 
     @Test
     void findMedicalServiceByClinicIdSuccess() {
-        when(clinicRepository.findById(1L)).thenReturn(Optional.of(clinic));
-        when(medicalServiceRepository.findByClinicId(1L)).thenReturn(List.of(medicalService));
+        Page<MedicalService> page = new PageImpl<>(List.of(medicalService));
 
-        List<MedicalServiceDto> result = medicalServiceService.findMedicalServiceByClinicId(1L);
+        when(clinicRepository.findById(1L)).thenReturn(Optional.of(clinic));
+        when(medicalServiceRepository.findByClinicId(eq(1L), any(Pageable.class))).thenReturn(page);
+
+        Page<MedicalServiceDto> result = medicalServiceService.findMedicalServiceByClinicId(1L, PageRequest.of(0, 20));
 
         assertNotNull(result);
-        assertEquals(1, result.size());
-        assertEquals("Тестовая услуга", result.get(0).getTitle());
+        assertEquals(1, result.getContent().size());
+        assertEquals("Тестовая услуга", result.getContent().get(0).getTitle());
 
         verify(clinicRepository, times(1)).findById(1L);
-        verify(medicalServiceRepository, times(1)).findByClinicId(1L);
+        verify(medicalServiceRepository, times(1)).findByClinicId(eq(1L), any(Pageable.class));
     }
 
     @Test
     void findMedicalServiceByClinicIdReturnsEmptyListWhenNoServices() {
-        when(clinicRepository.findById(1L)).thenReturn(Optional.of(clinic));
-        when(medicalServiceRepository.findByClinicId(1L)).thenReturn(List.of());
+        Page<MedicalService> emptyPage = new PageImpl<>(List.of());
 
-        List<MedicalServiceDto> result = medicalServiceService.findMedicalServiceByClinicId(1L);
+        when(clinicRepository.findById(1L)).thenReturn(Optional.of(clinic));
+        when(medicalServiceRepository.findByClinicId(eq(1L), any(Pageable.class))).thenReturn(emptyPage);
+
+        Page<MedicalServiceDto> result = medicalServiceService.findMedicalServiceByClinicId(1L, PageRequest.of(0, 20));
 
         assertNotNull(result);
-        assertTrue(result.isEmpty());
+        assertTrue(result.getContent().isEmpty());
 
         verify(clinicRepository, times(1)).findById(1L);
-        verify(medicalServiceRepository, times(1)).findByClinicId(1L);
+        verify(medicalServiceRepository, times(1)).findByClinicId(eq(1L), any(Pageable.class));
     }
 
     @Test
@@ -210,11 +214,11 @@ public class MedicalServiceTest {
         when(clinicRepository.findById(1L)).thenReturn(Optional.empty());
 
         assertThrows(NotFoundException.class, () -> {
-            medicalServiceService.findMedicalServiceByClinicId(1L);
+            medicalServiceService.findMedicalServiceByClinicId(1L, PageRequest.of(0, 20));
         });
 
         verify(clinicRepository, times(1)).findById(1L);
-        verify(medicalServiceRepository, never()).findByClinicId(anyLong());
+        verify(medicalServiceRepository, never()).findByClinicId(anyLong(), any(Pageable.class));
     }
 
 

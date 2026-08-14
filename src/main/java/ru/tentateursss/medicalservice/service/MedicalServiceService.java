@@ -15,7 +15,7 @@ public interface MedicalServiceService {
 
     void deleteMedicalService(Long id);
 
-    List<MedicalServiceDto> findMedicalServiceByClinicId(Long clinicId);
+    Page<MedicalServiceDto> findMedicalServiceByClinicId(Long clinicId, Pageable pageable);
 
     Page<MedicalServiceDto> findAllMedicalService(Pageable pageable);
 

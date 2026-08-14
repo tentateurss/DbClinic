@@ -1,5 +1,7 @@
 package ru.tentateursss.appointment.repository;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import ru.tentateursss.appointment.model.Appointment;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
@@ -16,29 +18,33 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
 
     Optional<Appointment> findById(Long id);
 
-    List<Appointment> findByPatientId(Long patientId);
+    Page<Appointment> findByPatientId(Long patientId, Pageable pageable);
 
-    List<Appointment> findByEmployeeId(Long employeeId);
+    Page<Appointment> findByEmployeeId(Long employeeId, Pageable pageable);
+
+    Page<Appointment> findByClinicId(Long clinicId, Pageable pageable);
 
     List<Appointment> findByClinicId(Long clinicId);
 
-    List<Appointment> findByMedicalServiceId(Long medicalServiceId);
+    Page<Appointment> findByMedicalServiceId(Long medicalServiceId, Pageable pageable);
+
+    Page<Appointment> findByStatus(AppointmentStatus status, Pageable pageable);
 
     List<Appointment> findByStatus(AppointmentStatus status);
 
-    List<Appointment> findByPatientIdAndStatus(Long patientId, AppointmentStatus status);
+    Page<Appointment> findByPatientIdAndStatus(Long patientId, AppointmentStatus status, Pageable pageable);
 
-    List<Appointment> findByEmployeeIdAndStatus(Long employeeId, AppointmentStatus status);
+    Page<Appointment> findByEmployeeIdAndStatus(Long employeeId, AppointmentStatus status, Pageable pageable);
 
-    List<Appointment> findByClinicIdAndStatus(Long clinicId, AppointmentStatus status);
+    Page<Appointment> findByClinicIdAndStatus(Long clinicId, AppointmentStatus status, Pageable pageable);
 
-    List<Appointment> findByDateTimeBetween(LocalDateTime start, LocalDateTime end);
+    Page<Appointment> findByDateTimeBetween(LocalDateTime start, LocalDateTime end, Pageable pageable);
 
-    Optional<Appointment> findByEmployeeIdAndDateTime(Long employeeId, LocalDateTime date);
+    Page<Appointment> findByEmployeeIdAndDateTimeBetween(Long employeeId, LocalDateTime start, LocalDateTime end, Pageable pageable);
 
     List<Appointment> findByEmployeeIdAndDateTimeBetween(Long employeeId, LocalDateTime start, LocalDateTime end);
 
-    List<Appointment> findByPatientIdAndDateTimeBetween(Long patientId, LocalDateTime start, LocalDateTime end);
+    Page<Appointment> findByStatusIn(List<AppointmentStatus> status, Pageable pageable);
 
     boolean existsByEmployeeAndStatusIn(Employee employee, List<AppointmentStatus> statuses);
 

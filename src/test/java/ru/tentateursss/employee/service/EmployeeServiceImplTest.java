@@ -356,31 +356,35 @@ class EmployeeServiceImplTest {
 
     @Test
     void getEmployeesByClinicIdSuccess() {
-        when(clinicRepository.findById(1L)).thenReturn(Optional.of(clinic));
-        when(employeeRepository.findByClinicId(1L)).thenReturn(List.of(employee));
+        Page<Employee> page = new PageImpl<>(List.of(employee));
 
-        List<EmployeeDto> result = employeeService.getEmployeesByClinicId(1L);
+        when(clinicRepository.findById(1L)).thenReturn(Optional.of(clinic));
+        when(employeeRepository.findByClinicId(eq(1L), any(Pageable.class))).thenReturn(page);
+
+        Page<EmployeeDto> result = employeeService.getEmployeesByClinicId(1L, PageRequest.of(0, 20));
 
         assertNotNull(result);
-        assertEquals(1, result.size());
-        assertEquals("Петров Петр Петрович", result.get(0).getFullName());
+        assertEquals(1, result.getContent().size());
+        assertEquals("Петров Петр Петрович", result.getContent().get(0).getFullName());
 
         verify(clinicRepository, times(1)).findById(1L);
-        verify(employeeRepository, times(1)).findByClinicId(1L);
+        verify(employeeRepository, times(1)).findByClinicId(eq(1L), any(Pageable.class));
     }
 
     @Test
     void getEmployeesByClinicIdReturnsEmptyListWhenNoEmployees() {
-        when(clinicRepository.findById(1L)).thenReturn(Optional.of(clinic));
-        when(employeeRepository.findByClinicId(1L)).thenReturn(List.of());
+        Page<Employee> emptyPage = new PageImpl<>(List.of());
 
-        List<EmployeeDto> result = employeeService.getEmployeesByClinicId(1L);
+        when(clinicRepository.findById(1L)).thenReturn(Optional.of(clinic));
+        when(employeeRepository.findByClinicId(eq(1L), any(Pageable.class))).thenReturn(emptyPage);
+
+        Page<EmployeeDto> result = employeeService.getEmployeesByClinicId(1L, PageRequest.of(0, 20));
 
         assertNotNull(result);
-        assertTrue(result.isEmpty());
+        assertTrue(result.getContent().isEmpty());
 
         verify(clinicRepository, times(1)).findById(1L);
-        verify(employeeRepository, times(1)).findByClinicId(1L);
+        verify(employeeRepository, times(1)).findByClinicId(eq(1L), any(Pageable.class));
     }
 
     @Test
@@ -388,68 +392,74 @@ class EmployeeServiceImplTest {
         when(clinicRepository.findById(1L)).thenReturn(Optional.empty());
 
         assertThrows(NotFoundException.class, () -> {
-            employeeService.getEmployeesByClinicId(1L);
+            employeeService.getEmployeesByClinicId(1L, PageRequest.of(0, 20));
         });
 
         verify(clinicRepository, times(1)).findById(1L);
-        verify(employeeRepository, never()).findByClinicId(anyLong());
+        verify(employeeRepository, never()).findByClinicId(anyLong(), any(Pageable.class));
     }
 
     @Test
     void getEmployeesByRoleSuccess() {
-        when(employeeRepository.findByRole(EmployeeRole.DOCTOR)).thenReturn(List.of(employee));
+        Page<Employee> page = new PageImpl<>(List.of(employee));
 
-        List<EmployeeDto> result = employeeService.getEmployeesByRole(EmployeeRole.DOCTOR);
+        when(employeeRepository.findByRole(eq(EmployeeRole.DOCTOR), any(Pageable.class))).thenReturn(page);
+
+        Page<EmployeeDto> result = employeeService.getEmployeesByRole(EmployeeRole.DOCTOR, PageRequest.of(0, 20));
 
         assertNotNull(result);
-        assertEquals(1, result.size());
-        assertEquals(EmployeeRole.DOCTOR, result.get(0).getRole());
+        assertEquals(1, result.getContent().size());
+        assertEquals(EmployeeRole.DOCTOR, result.getContent().get(0).getRole());
 
-        verify(employeeRepository, times(1)).findByRole(EmployeeRole.DOCTOR);
+        verify(employeeRepository, times(1)).findByRole(eq(EmployeeRole.DOCTOR), any(Pageable.class));
     }
 
     @Test
     void getEmployeesByRoleReturnsEmptyListWhenNoEmployeesWithRole() {
-        when(employeeRepository.findByRole(EmployeeRole.ADMIN)).thenReturn(List.of());
+        Page<Employee> emptyPage = new PageImpl<>(List.of());
 
-        List<EmployeeDto> result = employeeService.getEmployeesByRole(EmployeeRole.ADMIN);
+        when(employeeRepository.findByRole(eq(EmployeeRole.ADMIN), any(Pageable.class))).thenReturn(emptyPage);
+
+        Page<EmployeeDto> result = employeeService.getEmployeesByRole(EmployeeRole.ADMIN, PageRequest.of(0, 20));
 
         assertNotNull(result);
-        assertTrue(result.isEmpty());
+        assertTrue(result.getContent().isEmpty());
 
-        verify(employeeRepository, times(1)).findByRole(EmployeeRole.ADMIN);
+        verify(employeeRepository, times(1)).findByRole(eq(EmployeeRole.ADMIN), any(Pageable.class));
     }
 
     @Test
     void getEmployeesByClinicIdAndRoleSuccess() {
-        when(clinicRepository.findById(1L)).thenReturn(Optional.of(clinic));
-        when(employeeRepository.findByClinicIdAndRole(1L, EmployeeRole.DOCTOR))
-                .thenReturn(List.of(employee));
+        Page<Employee> page = new PageImpl<>(List.of(employee));
 
-        List<EmployeeDto> result = employeeService.getEmployeesByClinicIdAndRole(1L, EmployeeRole.DOCTOR);
+        when(clinicRepository.findById(1L)).thenReturn(Optional.of(clinic));
+        when(employeeRepository.findByClinicIdAndRole(eq(1L), eq(EmployeeRole.DOCTOR), any(Pageable.class))).thenReturn(page);
+
+        Page<EmployeeDto> result = employeeService.getEmployeesByClinicIdAndRole(1L, EmployeeRole.DOCTOR, PageRequest.of(0, 20));
 
         assertNotNull(result);
-        assertEquals(1, result.size());
-        assertEquals("Петров Петр Петрович", result.get(0).getFullName());
-        assertEquals(EmployeeRole.DOCTOR, result.get(0).getRole());
+        assertEquals(1, result.getContent().size());
+        assertEquals("Петров Петр Петрович", result.getContent().get(0).getFullName());
+        assertEquals(EmployeeRole.DOCTOR, result.getContent().get(0).getRole());
 
         verify(clinicRepository, times(1)).findById(1L);
-        verify(employeeRepository, times(1)).findByClinicIdAndRole(1L, EmployeeRole.DOCTOR);
+        verify(employeeRepository, times(1)).findByClinicIdAndRole(eq(1L), eq(EmployeeRole.DOCTOR), any(Pageable.class));
     }
 
     @Test
     void getEmployeesByClinicIdAndRoleReturnsEmptyListWhenNoEmployees() {
-        when(clinicRepository.findById(1L)).thenReturn(Optional.of(clinic));
-        when(employeeRepository.findByClinicIdAndRole(1L, EmployeeRole.ADMIN))
-                .thenReturn(List.of());
+        Page<Employee> emptyPage = new PageImpl<>(List.of());
 
-        List<EmployeeDto> result = employeeService.getEmployeesByClinicIdAndRole(1L, EmployeeRole.ADMIN);
+        when(clinicRepository.findById(1L)).thenReturn(Optional.of(clinic));
+        when(employeeRepository.findByClinicIdAndRole(eq(1L), eq(EmployeeRole.ADMIN), any(Pageable.class))).thenReturn(emptyPage);
+
+        Page<EmployeeDto> result = employeeService.getEmployeesByClinicIdAndRole(1L, EmployeeRole.ADMIN, PageRequest.of(0, 20));
 
         assertNotNull(result);
-        assertTrue(result.isEmpty());
+        assertTrue(result.getContent().isEmpty());
 
         verify(clinicRepository, times(1)).findById(1L);
-        verify(employeeRepository, times(1)).findByClinicIdAndRole(1L, EmployeeRole.ADMIN);
+        verify(employeeRepository, times(1)).findByClinicIdAndRole(eq(1L), eq(EmployeeRole.ADMIN), any(Pageable.class));
     }
 
     @Test
@@ -457,25 +467,26 @@ class EmployeeServiceImplTest {
         when(clinicRepository.findById(1L)).thenReturn(Optional.empty());
 
         assertThrows(NotFoundException.class, () -> {
-            employeeService.getEmployeesByClinicIdAndRole(1L, EmployeeRole.DOCTOR);
+            employeeService.getEmployeesByClinicIdAndRole(1L, EmployeeRole.DOCTOR, PageRequest.of(0, 20));
         });
 
         verify(clinicRepository, times(1)).findById(1L);
-        verify(employeeRepository, never()).findByClinicIdAndRole(anyLong(), any(EmployeeRole.class));
+        verify(employeeRepository, never()).findByClinicIdAndRole(anyLong(), any(EmployeeRole.class), any(Pageable.class));
     }
 
     @Test
     void getEmployeesBySpecializationSuccess() {
-        when(employeeRepository.findBySpecializationContainingIgnoreCase("Терапевт"))
-                .thenReturn(List.of(employee));
+        Page<Employee> page = new PageImpl<>(List.of(employee));
 
-        List<EmployeeDto> result = employeeService.getEmployeesBySpecializationContainingIgnoreCase("Терапевт");
+        when(employeeRepository.findBySpecializationContainingIgnoreCase(eq("Терапевт"), any(Pageable.class))).thenReturn(page);
+
+        Page<EmployeeDto> result = employeeService.getEmployeesBySpecializationContainingIgnoreCase("Терапевт", PageRequest.of(0, 20));
 
         assertNotNull(result);
-        assertEquals(1, result.size());
-        assertEquals("Терапевт", result.get(0).getSpecialization());
+        assertEquals(1, result.getContent().size());
+        assertEquals("Терапевт", result.getContent().get(0).getSpecialization());
 
-        verify(employeeRepository, times(1)).findBySpecializationContainingIgnoreCase("Терапевт");
+        verify(employeeRepository, times(1)).findBySpecializationContainingIgnoreCase(eq("Терапевт"), any(Pageable.class));
     }
 
     @Test
@@ -490,27 +501,29 @@ class EmployeeServiceImplTest {
                 .clinic(clinic)
                 .build();
 
-        when(employeeRepository.findBySpecializationContainingIgnoreCase("Терапевт"))
-                .thenReturn(List.of(employee, employee2));
+        Page<Employee> page = new PageImpl<>(List.of(employee, employee2));
 
-        List<EmployeeDto> result = employeeService.getEmployeesBySpecializationContainingIgnoreCase("Терапевт");
+        when(employeeRepository.findBySpecializationContainingIgnoreCase(eq("Терапевт"), any(Pageable.class))).thenReturn(page);
+
+        Page<EmployeeDto> result = employeeService.getEmployeesBySpecializationContainingIgnoreCase("Терапевт", PageRequest.of(0, 20));
 
         assertNotNull(result);
-        assertEquals(2, result.size());
+        assertEquals(2, result.getContent().size());
 
-        verify(employeeRepository, times(1)).findBySpecializationContainingIgnoreCase("Терапевт");
+        verify(employeeRepository, times(1)).findBySpecializationContainingIgnoreCase(eq("Терапевт"), any(Pageable.class));
     }
 
     @Test
     void getEmployeesBySpecializationReturnsEmptyList() {
-        when(employeeRepository.findBySpecializationContainingIgnoreCase("Хирург"))
-                .thenReturn(List.of());
+        Page<Employee> emptyPage = new PageImpl<>(List.of());
 
-        List<EmployeeDto> result = employeeService.getEmployeesBySpecializationContainingIgnoreCase("Хирург");
+        when(employeeRepository.findBySpecializationContainingIgnoreCase(eq("Хирург"), any(Pageable.class))).thenReturn(emptyPage);
+
+        Page<EmployeeDto> result = employeeService.getEmployeesBySpecializationContainingIgnoreCase("Хирург", PageRequest.of(0, 20));
 
         assertNotNull(result);
-        assertTrue(result.isEmpty());
+        assertTrue(result.getContent().isEmpty());
 
-        verify(employeeRepository, times(1)).findBySpecializationContainingIgnoreCase("Хирург");
+        verify(employeeRepository, times(1)).findBySpecializationContainingIgnoreCase(eq("Хирург"), any(Pageable.class));
     }
 }

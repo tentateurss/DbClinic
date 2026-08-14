@@ -20,6 +20,7 @@ import java.util.List;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -107,34 +108,44 @@ class PublicPatientControllerTest {
 
     @Test
     void getPatientsByClinicIdSuccess() throws Exception {
-        when(patientService.getAllPatientsByClinicId(1L)).thenReturn(List.of(patientDto));
+        Page<PatientDto> page = new PageImpl<>(List.of(patientDto));
 
-        mockMvc.perform(get("/public/patients/clinic/{clinicId}", 1L))
+        when(patientService.getAllPatientsByClinicId(eq(1L), any(Pageable.class))).thenReturn(page);
+
+        mockMvc.perform(get("/public/patients/clinic/{clinicId}", 1L)
+                        .param("page", "0")
+                        .param("size", "20"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(1)))
-                .andExpect(jsonPath("$[0].id", is(1)))
-                .andExpect(jsonPath("$[0].fullName", is("Иванов Иван Иванович")));
+                .andExpect(jsonPath("$.content", hasSize(1)))
+                .andExpect(jsonPath("$.content[0].id", is(1)))
+                .andExpect(jsonPath("$.content[0].fullName", is("Иванов Иван Иванович")));
 
-        verify(patientService, times(1)).getAllPatientsByClinicId(1L);
+        verify(patientService, times(1)).getAllPatientsByClinicId(eq(1L), any(Pageable.class));
     }
 
     @Test
     void getPatientsByClinicIdReturnsEmptyList() throws Exception {
-        when(patientService.getAllPatientsByClinicId(1L)).thenReturn(List.of());
+        Page<PatientDto> emptyPage = new PageImpl<>(List.of());
 
-        mockMvc.perform(get("/public/patients/clinic/{clinicId}", 1L))
+        when(patientService.getAllPatientsByClinicId(eq(1L), any(Pageable.class))).thenReturn(emptyPage);
+
+        mockMvc.perform(get("/public/patients/clinic/{clinicId}", 1L)
+                        .param("page", "0")
+                        .param("size", "20"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(0)));
+                .andExpect(jsonPath("$.content", hasSize(0)));
 
-        verify(patientService, times(1)).getAllPatientsByClinicId(1L);
+        verify(patientService, times(1)).getAllPatientsByClinicId(eq(1L), any(Pageable.class));
     }
 
     @Test
     void getPatientsByClinicIdThrowsNotFound() throws Exception {
-        when(patientService.getAllPatientsByClinicId(999L))
+        when(patientService.getAllPatientsByClinicId(eq(999L), any(Pageable.class)))
                 .thenThrow(new NotFoundException("Клиника с ID 999 не найдена"));
 
-        mockMvc.perform(get("/public/patients/clinic/{clinicId}", 999L))
+        mockMvc.perform(get("/public/patients/clinic/{clinicId}", 999L)
+                        .param("page", "0")
+                        .param("size", "20"))
                 .andExpect(status().isNotFound());
     }
 
@@ -186,27 +197,35 @@ class PublicPatientControllerTest {
 
     @Test
     void getPatientByFullNameSuccess() throws Exception {
-        when(patientService.getPatientByFullName("Иванов")).thenReturn(List.of(patientDto));
+        Page<PatientDto> page = new PageImpl<>(List.of(patientDto));
+
+        when(patientService.getPatientByFullName(eq("Иванов"), any(Pageable.class))).thenReturn(page);
 
         mockMvc.perform(get("/public/patients/search")
-                        .param("fullName", "Иванов"))
+                        .param("fullName", "Иванов")
+                        .param("page", "0")
+                        .param("size", "20"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(1)))
-                .andExpect(jsonPath("$[0].id", is(1)))
-                .andExpect(jsonPath("$[0].fullName", is("Иванов Иван Иванович")));
+                .andExpect(jsonPath("$.content", hasSize(1)))
+                .andExpect(jsonPath("$.content[0].id", is(1)))
+                .andExpect(jsonPath("$.content[0].fullName", is("Иванов Иван Иванович")));
 
-        verify(patientService, times(1)).getPatientByFullName("Иванов");
+        verify(patientService, times(1)).getPatientByFullName(eq("Иванов"), any(Pageable.class));
     }
 
     @Test
     void getPatientByFullNameReturnsEmptyList() throws Exception {
-        when(patientService.getPatientByFullName("Неизвестный")).thenReturn(List.of());
+        Page<PatientDto> emptyPage = new PageImpl<>(List.of());
+
+        when(patientService.getPatientByFullName(eq("Неизвестный"), any(Pageable.class))).thenReturn(emptyPage);
 
         mockMvc.perform(get("/public/patients/search")
-                        .param("fullName", "Неизвестный"))
+                        .param("fullName", "Неизвестный")
+                        .param("page", "0")
+                        .param("size", "20"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(0)));
+                .andExpect(jsonPath("$.content", hasSize(0)));
 
-        verify(patientService, times(1)).getPatientByFullName("Неизвестный");
+        verify(patientService, times(1)).getPatientByFullName(eq("Неизвестный"), any(Pageable.class));
     }
 }

@@ -22,6 +22,7 @@ import java.util.List;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -108,34 +109,44 @@ class PublicMedicalServiceControllerTest {
 
     @Test
     void getMedicalServicesByClinicIdSuccess() throws Exception {
-        when(service.findMedicalServiceByClinicId(1L)).thenReturn(List.of(medicalServiceDto));
+        Page<MedicalServiceDto> page = new PageImpl<>(List.of(medicalServiceDto));
 
-        mockMvc.perform(get("/public/ms/clinic/{clinicId}", 1L))
+        when(service.findMedicalServiceByClinicId(eq(1L), any(Pageable.class))).thenReturn(page);
+
+        mockMvc.perform(get("/public/ms/clinic/{clinicId}", 1L)
+                        .param("page", "0")
+                        .param("size", "20"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(1)))
-                .andExpect(jsonPath("$[0].id", is(1)))
-                .andExpect(jsonPath("$[0].title", is("Тестовая услуга")));
+                .andExpect(jsonPath("$.content", hasSize(1)))
+                .andExpect(jsonPath("$.content[0].id", is(1)))
+                .andExpect(jsonPath("$.content[0].title", is("Тестовая услуга")));
 
-        verify(service, times(1)).findMedicalServiceByClinicId(1L);
+        verify(service, times(1)).findMedicalServiceByClinicId(eq(1L), any(Pageable.class));
     }
 
     @Test
     void getMedicalServicesByClinicIdReturnsEmptyList() throws Exception {
-        when(service.findMedicalServiceByClinicId(1L)).thenReturn(List.of());
+        Page<MedicalServiceDto> emptyPage = new PageImpl<>(List.of());
 
-        mockMvc.perform(get("/public/ms/clinic/{clinicId}", 1L))
+        when(service.findMedicalServiceByClinicId(eq(1L), any(Pageable.class))).thenReturn(emptyPage);
+
+        mockMvc.perform(get("/public/ms/clinic/{clinicId}", 1L)
+                        .param("page", "0")
+                        .param("size", "20"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(0)));
+                .andExpect(jsonPath("$.content", hasSize(0)));
 
-        verify(service, times(1)).findMedicalServiceByClinicId(1L);
+        verify(service, times(1)).findMedicalServiceByClinicId(eq(1L), any(Pageable.class));
     }
 
     @Test
     void getMedicalServicesByClinicIdThrowsNotFound() throws Exception {
-        when(service.findMedicalServiceByClinicId(999L))
+        when(service.findMedicalServiceByClinicId(eq(999L), any(Pageable.class)))
                 .thenThrow(new NotFoundException("Клиника с ID 999 не найдена"));
 
-        mockMvc.perform(get("/public/ms/clinic/{clinicId}", 999L))
+        mockMvc.perform(get("/public/ms/clinic/{clinicId}", 999L)
+                        .param("page", "0")
+                        .param("size", "20"))
                 .andExpect(status().isNotFound());
     }
 }

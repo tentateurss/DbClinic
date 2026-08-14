@@ -318,31 +318,35 @@ class PatientServiceImplTest {
 
     @Test
     void getPatientsByClinicIdSuccess() {
-        when(clinicRepository.findById(1L)).thenReturn(Optional.of(clinic));
-        when(patientRepository.findByClinicId(1L)).thenReturn(List.of(patient));
+        Page<Patient> page = new PageImpl<>(List.of(patient));
 
-        List<PatientDto> result = patientService.getAllPatientsByClinicId(1L);
+        when(clinicRepository.findById(1L)).thenReturn(Optional.of(clinic));
+        when(patientRepository.findByClinicId(eq(1L), any(Pageable.class))).thenReturn(page);
+
+        Page<PatientDto> result = patientService.getAllPatientsByClinicId(1L, PageRequest.of(0, 20));
 
         assertNotNull(result);
-        assertEquals(1, result.size());
-        assertEquals("Иванов Иван Иванович", result.get(0).getFullName());
+        assertEquals(1, result.getContent().size());
+        assertEquals("Иванов Иван Иванович", result.getContent().get(0).getFullName());
 
         verify(clinicRepository, times(1)).findById(1L);
-        verify(patientRepository, times(1)).findByClinicId(1L);
+        verify(patientRepository, times(1)).findByClinicId(eq(1L), any(Pageable.class));
     }
 
     @Test
     void getPatientsByClinicIdReturnsEmptyListWhenNoPatients() {
-        when(clinicRepository.findById(1L)).thenReturn(Optional.of(clinic));
-        when(patientRepository.findByClinicId(1L)).thenReturn(List.of());
+        Page<Patient> emptyPage = new PageImpl<>(List.of());
 
-        List<PatientDto> result = patientService.getAllPatientsByClinicId(1L);
+        when(clinicRepository.findById(1L)).thenReturn(Optional.of(clinic));
+        when(patientRepository.findByClinicId(eq(1L), any(Pageable.class))).thenReturn(emptyPage);
+
+        Page<PatientDto> result = patientService.getAllPatientsByClinicId(1L, PageRequest.of(0, 20));
 
         assertNotNull(result);
-        assertTrue(result.isEmpty());
+        assertTrue(result.getContent().isEmpty());
 
         verify(clinicRepository, times(1)).findById(1L);
-        verify(patientRepository, times(1)).findByClinicId(1L);
+        verify(patientRepository, times(1)).findByClinicId(eq(1L), any(Pageable.class));
     }
 
     @Test
@@ -350,11 +354,11 @@ class PatientServiceImplTest {
         when(clinicRepository.findById(1L)).thenReturn(Optional.empty());
 
         assertThrows(NotFoundException.class, () -> {
-            patientService.getAllPatientsByClinicId(1L);
+            patientService.getAllPatientsByClinicId(1L, PageRequest.of(0, 20));
         });
 
         verify(clinicRepository, times(1)).findById(1L);
-        verify(patientRepository, never()).findByClinicId(anyLong());
+        verify(patientRepository, never()).findByClinicId(anyLong(), any(Pageable.class));
     }
 
     @Test
@@ -407,16 +411,17 @@ class PatientServiceImplTest {
 
     @Test
     void getPatientByFullNameSuccess() {
-        when(patientRepository.findByFullNameContainingIgnoreCase("Иванов"))
-                .thenReturn(List.of(patient));
+        Page<Patient> page = new PageImpl<>(List.of(patient));
 
-        List<PatientDto> result = patientService.getPatientByFullName("Иванов");
+        when(patientRepository.findByFullNameContainingIgnoreCase(eq("Иванов"), any(Pageable.class))).thenReturn(page);
+
+        Page<PatientDto> result = patientService.getPatientByFullName("Иванов", PageRequest.of(0, 20));
 
         assertNotNull(result);
-        assertEquals(1, result.size());
-        assertEquals("Иванов Иван Иванович", result.get(0).getFullName());
+        assertEquals(1, result.getContent().size());
+        assertEquals("Иванов Иван Иванович", result.getContent().get(0).getFullName());
 
-        verify(patientRepository, times(1)).findByFullNameContainingIgnoreCase("Иванов");
+        verify(patientRepository, times(1)).findByFullNameContainingIgnoreCase(eq("Иванов"), any(Pageable.class));
     }
 
     @Test
@@ -429,28 +434,30 @@ class PatientServiceImplTest {
                 .clinic(clinic)
                 .build();
 
-        when(patientRepository.findByFullNameContainingIgnoreCase("Иванов"))
-                .thenReturn(List.of(patient, patient2));
+        Page<Patient> page = new PageImpl<>(List.of(patient, patient2));
 
-        List<PatientDto> result = patientService.getPatientByFullName("Иванов");
+        when(patientRepository.findByFullNameContainingIgnoreCase(eq("Иванов"), any(Pageable.class))).thenReturn(page);
+
+        Page<PatientDto> result = patientService.getPatientByFullName("Иванов", PageRequest.of(0, 20));
 
         assertNotNull(result);
-        assertEquals(2, result.size());
+        assertEquals(2, result.getContent().size());
 
-        verify(patientRepository, times(1)).findByFullNameContainingIgnoreCase("Иванов");
+        verify(patientRepository, times(1)).findByFullNameContainingIgnoreCase(eq("Иванов"), any(Pageable.class));
     }
 
     @Test
     void getPatientByFullNameReturnsEmptyList() {
-        when(patientRepository.findByFullNameContainingIgnoreCase("Неизвестный"))
-                .thenReturn(List.of());
+        Page<Patient> emptyPage = new PageImpl<>(List.of());
 
-        List<PatientDto> result = patientService.getPatientByFullName("Неизвестный");
+        when(patientRepository.findByFullNameContainingIgnoreCase(eq("Неизвестный"), any(Pageable.class))).thenReturn(emptyPage);
+
+        Page<PatientDto> result = patientService.getPatientByFullName("Неизвестный", PageRequest.of(0, 20));
 
         assertNotNull(result);
-        assertTrue(result.isEmpty());
+        assertTrue(result.getContent().isEmpty());
 
-        verify(patientRepository, times(1)).findByFullNameContainingIgnoreCase("Неизвестный");
+        verify(patientRepository, times(1)).findByFullNameContainingIgnoreCase(eq("Неизвестный"), any(Pageable.class));
     }
 
     @Test

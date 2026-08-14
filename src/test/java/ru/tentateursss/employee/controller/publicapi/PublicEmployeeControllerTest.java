@@ -24,6 +24,7 @@ import java.util.List;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -113,120 +114,151 @@ class PublicEmployeeControllerTest {
 
     @Test
     void getEmployeesByClinicIdSuccess() throws Exception {
-        when(employeeService.getEmployeesByClinicId(1L)).thenReturn(List.of(employeeDto));
+        Page<EmployeeDto> page = new PageImpl<>(List.of(employeeDto));
 
-        mockMvc.perform(get("/public/employees/clinic/{clinicId}", 1L))
+        when(employeeService.getEmployeesByClinicId(eq(1L), any(Pageable.class))).thenReturn(page);
+
+        mockMvc.perform(get("/public/employees/clinic/{clinicId}", 1L)
+                        .param("page", "0")
+                        .param("size", "20"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(1)))
-                .andExpect(jsonPath("$[0].id", is(1)))
-                .andExpect(jsonPath("$[0].fullName", is("Петров Петр Петрович")));
+                .andExpect(jsonPath("$.content", hasSize(1)))
+                .andExpect(jsonPath("$.content[0].id", is(1)))
+                .andExpect(jsonPath("$.content[0].fullName", is("Петров Петр Петрович")));
 
-        verify(employeeService, times(1)).getEmployeesByClinicId(1L);
+        verify(employeeService, times(1)).getEmployeesByClinicId(eq(1L), any(Pageable.class));
     }
 
     @Test
     void getEmployeesByClinicIdReturnsEmptyList() throws Exception {
-        when(employeeService.getEmployeesByClinicId(1L)).thenReturn(List.of());
+        Page<EmployeeDto> emptyPage = new PageImpl<>(List.of());
 
-        mockMvc.perform(get("/public/employees/clinic/{clinicId}", 1L))
+        when(employeeService.getEmployeesByClinicId(eq(1L), any(Pageable.class))).thenReturn(emptyPage);
+
+        mockMvc.perform(get("/public/employees/clinic/{clinicId}", 1L)
+                        .param("page", "0")
+                        .param("size", "20"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(0)));
+                .andExpect(jsonPath("$.content", hasSize(0)));
 
-        verify(employeeService, times(1)).getEmployeesByClinicId(1L);
+        verify(employeeService, times(1)).getEmployeesByClinicId(eq(1L), any(Pageable.class));
     }
 
     @Test
     void getEmployeesByClinicIdThrowsNotFound() throws Exception {
-        when(employeeService.getEmployeesByClinicId(999L))
+        when(employeeService.getEmployeesByClinicId(eq(999L), any(Pageable.class)))
                 .thenThrow(new NotFoundException("Клиника с ID 999 не найдена"));
 
-        mockMvc.perform(get("/public/employees/clinic/{clinicId}", 999L))
+        mockMvc.perform(get("/public/employees/clinic/{clinicId}", 999L)
+                        .param("page", "0")
+                        .param("size", "20"))
                 .andExpect(status().isNotFound());
     }
 
     @Test
     void getEmployeesByRoleSuccess() throws Exception {
-        when(employeeService.getEmployeesByRole(EmployeeRole.DOCTOR))
-                .thenReturn(List.of(employeeDto));
+        Page<EmployeeDto> page = new PageImpl<>(List.of(employeeDto));
 
-        mockMvc.perform(get("/public/employees/role/{role}", EmployeeRole.DOCTOR))
+        when(employeeService.getEmployeesByRole(eq(EmployeeRole.DOCTOR), any(Pageable.class))).thenReturn(page);
+
+        mockMvc.perform(get("/public/employees/role/{role}", EmployeeRole.DOCTOR)
+                        .param("page", "0")
+                        .param("size", "20"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(1)))
-                .andExpect(jsonPath("$[0].role", is("DOCTOR")));
+                .andExpect(jsonPath("$.content", hasSize(1)))
+                .andExpect(jsonPath("$.content[0].role", is("DOCTOR")));
 
-        verify(employeeService, times(1)).getEmployeesByRole(EmployeeRole.DOCTOR);
+        verify(employeeService, times(1)).getEmployeesByRole(eq(EmployeeRole.DOCTOR), any(Pageable.class));
     }
 
     @Test
     void getEmployeesByRoleReturnsEmptyList() throws Exception {
-        when(employeeService.getEmployeesByRole(EmployeeRole.ADMIN)).thenReturn(List.of());
+        Page<EmployeeDto> emptyPage = new PageImpl<>(List.of());
 
-        mockMvc.perform(get("/public/employees/role/{role}", EmployeeRole.ADMIN))
+        when(employeeService.getEmployeesByRole(eq(EmployeeRole.ADMIN), any(Pageable.class))).thenReturn(emptyPage);
+
+        mockMvc.perform(get("/public/employees/role/{role}", EmployeeRole.ADMIN)
+                        .param("page", "0")
+                        .param("size", "20"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(0)));
+                .andExpect(jsonPath("$.content", hasSize(0)));
 
-        verify(employeeService, times(1)).getEmployeesByRole(EmployeeRole.ADMIN);
+        verify(employeeService, times(1)).getEmployeesByRole(eq(EmployeeRole.ADMIN), any(Pageable.class));
     }
 
     @Test
     void getEmployeesByClinicAndRoleSuccess() throws Exception {
-        when(employeeService.getEmployeesByClinicIdAndRole(1L, EmployeeRole.DOCTOR))
-                .thenReturn(List.of(employeeDto));
+        Page<EmployeeDto> page = new PageImpl<>(List.of(employeeDto));
 
-        mockMvc.perform(get("/public/employees/clinic/{clinicId}/role/{role}", 1L, EmployeeRole.DOCTOR))
+        when(employeeService.getEmployeesByClinicIdAndRole(eq(1L), eq(EmployeeRole.DOCTOR), any(Pageable.class))).thenReturn(page);
+
+        mockMvc.perform(get("/public/employees/clinic/{clinicId}/role/{role}", 1L, EmployeeRole.DOCTOR)
+                        .param("page", "0")
+                        .param("size", "20"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(1)))
-                .andExpect(jsonPath("$[0].id", is(1)))
-                .andExpect(jsonPath("$[0].role", is("DOCTOR")));
+                .andExpect(jsonPath("$.content", hasSize(1)))
+                .andExpect(jsonPath("$.content[0].id", is(1)))
+                .andExpect(jsonPath("$.content[0].role", is("DOCTOR")));
 
-        verify(employeeService, times(1)).getEmployeesByClinicIdAndRole(1L, EmployeeRole.DOCTOR);
+        verify(employeeService, times(1)).getEmployeesByClinicIdAndRole(eq(1L), eq(EmployeeRole.DOCTOR), any(Pageable.class));
     }
 
     @Test
     void getEmployeesByClinicAndRoleReturnsEmptyList() throws Exception {
-        when(employeeService.getEmployeesByClinicIdAndRole(1L, EmployeeRole.ADMIN))
-                .thenReturn(List.of());
+        Page<EmployeeDto> emptyPage = new PageImpl<>(List.of());
 
-        mockMvc.perform(get("/public/employees/clinic/{clinicId}/role/{role}", 1L, EmployeeRole.ADMIN))
+        when(employeeService.getEmployeesByClinicIdAndRole(eq(1L), eq(EmployeeRole.ADMIN), any(Pageable.class))).thenReturn(emptyPage);
+
+        mockMvc.perform(get("/public/employees/clinic/{clinicId}/role/{role}", 1L, EmployeeRole.ADMIN)
+                        .param("page", "0")
+                        .param("size", "20"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(0)));
+                .andExpect(jsonPath("$.content", hasSize(0)));
 
-        verify(employeeService, times(1)).getEmployeesByClinicIdAndRole(1L, EmployeeRole.ADMIN);
+        verify(employeeService, times(1)).getEmployeesByClinicIdAndRole(eq(1L), eq(EmployeeRole.ADMIN), any(Pageable.class));
     }
 
     @Test
     void getEmployeesByClinicAndRoleThrowsNotFound() throws Exception {
-        when(employeeService.getEmployeesByClinicIdAndRole(999L, EmployeeRole.DOCTOR))
+        when(employeeService.getEmployeesByClinicIdAndRole(eq(999L), eq(EmployeeRole.DOCTOR), any(Pageable.class)))
                 .thenThrow(new NotFoundException("Клиника с ID 999 не найдена"));
 
-        mockMvc.perform(get("/public/employees/clinic/{clinicId}/role/{role}", 999L, EmployeeRole.DOCTOR))
+        mockMvc.perform(get("/public/employees/clinic/{clinicId}/role/{role}", 999L, EmployeeRole.DOCTOR)
+                        .param("page", "0")
+                        .param("size", "20"))
                 .andExpect(status().isNotFound());
     }
 
     @Test
     void getEmployeesBySpecializationSuccess() throws Exception {
-        when(employeeService.getEmployeesBySpecializationContainingIgnoreCase("Терапевт"))
-                .thenReturn(List.of(employeeDto));
+        Page<EmployeeDto> page = new PageImpl<>(List.of(employeeDto));
+
+        when(employeeService.getEmployeesBySpecializationContainingIgnoreCase(eq("Терапевт"), any(Pageable.class))).thenReturn(page);
 
         mockMvc.perform(get("/public/employees/specialization")
-                        .param("specialization", "Терапевт"))
+                        .param("specialization", "Терапевт")
+                        .param("page", "0")
+                        .param("size", "20"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(1)))
-                .andExpect(jsonPath("$[0].specialization", is("Терапевт")));
+                .andExpect(jsonPath("$.content", hasSize(1)))
+                .andExpect(jsonPath("$.content[0].specialization", is("Терапевт")));
 
-        verify(employeeService, times(1)).getEmployeesBySpecializationContainingIgnoreCase("Терапевт");
+        verify(employeeService, times(1)).getEmployeesBySpecializationContainingIgnoreCase(eq("Терапевт"), any(Pageable.class));
     }
 
     @Test
     void getEmployeesBySpecializationReturnsEmptyList() throws Exception {
-        when(employeeService.getEmployeesBySpecializationContainingIgnoreCase("Хирург"))
-                .thenReturn(List.of());
+        Page<EmployeeDto> emptyPage = new PageImpl<>(List.of());
+
+        when(employeeService.getEmployeesBySpecializationContainingIgnoreCase(eq("Хирург"), any(Pageable.class))).thenReturn(emptyPage);
 
         mockMvc.perform(get("/public/employees/specialization")
-                        .param("specialization", "Хирург"))
+                        .param("specialization", "Хирург")
+                        .param("page", "0")
+                        .param("size", "20"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(0)));
+                .andExpect(jsonPath("$.content", hasSize(0)));
 
-        verify(employeeService, times(1)).getEmployeesBySpecializationContainingIgnoreCase("Хирург");
+        verify(employeeService, times(1)).getEmployeesBySpecializationContainingIgnoreCase(eq("Хирург"), any(Pageable.class));
     }
 }

@@ -6,8 +6,6 @@ import ru.tentateursss.employee.dto.EmployeeDto;
 import ru.tentateursss.employee.dto.NewEmployeeDto;
 import ru.tentateursss.enums.EmployeeRole;
 
-import java.util.List;
-
 public interface EmployeeService {
 
     EmployeeDto createEmployee(NewEmployeeDto employeeDto);
@@ -20,11 +18,11 @@ public interface EmployeeService {
 
     Page<EmployeeDto> getAllEmployees(Pageable pageable);
 
-    List<EmployeeDto> getEmployeesByClinicId(Long clinicId);
+    Page<EmployeeDto> getEmployeesByClinicId(Long clinicId, Pageable pageable);
 
-    List<EmployeeDto> getEmployeesByRole(EmployeeRole role);
+    Page<EmployeeDto> getEmployeesByRole(EmployeeRole role, Pageable pageable);
 
-    List<EmployeeDto> getEmployeesByClinicIdAndRole(Long clinicId, EmployeeRole role);
+    Page<EmployeeDto> getEmployeesByClinicIdAndRole(Long clinicId, EmployeeRole role, Pageable pageable);
 
-    List<EmployeeDto> getEmployeesBySpecializationContainingIgnoreCase(String specialization);
+    Page<EmployeeDto> getEmployeesBySpecializationContainingIgnoreCase(String specialization, Pageable pageable);
 }

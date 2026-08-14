@@ -4,6 +4,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -107,133 +108,190 @@ class PublicAppointmentControllerTest {
 
     @Test
     void getAppointmentsByPatientIdSuccess() throws Exception {
-        when(appointmentService.getAppointmentsByPatientId(1L)).thenReturn(List.of(appointmentDto));
+        Page<AppointmentDto> page = new PageImpl<>(List.of(appointmentDto));
 
-        mockMvc.perform(get("/public/appointments/patient/{patientId}", 1L))
+        when(appointmentService.getAppointmentsByPatientId(eq(1L), any(Pageable.class))).thenReturn(page);
+
+        mockMvc.perform(get("/public/appointments/patient/{patientId}", 1L)
+                        .param("page", "0")
+                        .param("size", "20"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(1)));
+                .andExpect(jsonPath("$.content", hasSize(1)));
 
-        verify(appointmentService, times(1)).getAppointmentsByPatientId(1L);
+        verify(appointmentService, times(1)).getAppointmentsByPatientId(eq(1L), any(Pageable.class));
     }
 
     @Test
     void getAppointmentsByPatientIdReturnsEmptyList() throws Exception {
-        when(appointmentService.getAppointmentsByPatientId(1L)).thenReturn(List.of());
+        Page<AppointmentDto> emptyPage = new PageImpl<>(List.of());
 
-        mockMvc.perform(get("/public/appointments/patient/{patientId}", 1L))
+        when(appointmentService.getAppointmentsByPatientId(eq(1L), any(Pageable.class))).thenReturn(emptyPage);
+
+        mockMvc.perform(get("/public/appointments/patient/{patientId}", 1L)
+                        .param("page", "0")
+                        .param("size", "20"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(0)));
+                .andExpect(jsonPath("$.content", hasSize(0)));
 
-        verify(appointmentService, times(1)).getAppointmentsByPatientId(1L);
+        verify(appointmentService, times(1)).getAppointmentsByPatientId(eq(1L), any(Pageable.class));
     }
 
     @Test
     void getAppointmentsByEmployeeIdSuccess() throws Exception {
-        when(appointmentService.getAppointmentsByEmployeeId(1L)).thenReturn(List.of(appointmentDto));
+        Page<AppointmentDto> page = new PageImpl<>(List.of(appointmentDto));
 
-        mockMvc.perform(get("/public/appointments/employee/{employeeId}", 1L))
+        when(appointmentService.getAppointmentsByEmployeeId(eq(1L), any(Pageable.class))).thenReturn(page);
+
+        mockMvc.perform(get("/public/appointments/employee/{employeeId}", 1L)
+                        .param("page", "0")
+                        .param("size", "20"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(1)));
+                .andExpect(jsonPath("$.content", hasSize(1)));
 
-        verify(appointmentService, times(1)).getAppointmentsByEmployeeId(1L);
+        verify(appointmentService, times(1)).getAppointmentsByEmployeeId(eq(1L), any(Pageable.class));
     }
 
     @Test
     void getAppointmentsByClinicIdSuccess() throws Exception {
-        when(appointmentService.getAppointmentsByClinicId(1L)).thenReturn(List.of(appointmentDto));
+        Page<AppointmentDto> page = new PageImpl<>(List.of(appointmentDto));
 
-        mockMvc.perform(get("/public/appointments/clinic/{clinicId}", 1L))
+        when(appointmentService.getAppointmentsByClinicId(eq(1L), any(Pageable.class))).thenReturn(page);
+
+        mockMvc.perform(get("/public/appointments/clinic/{clinicId}", 1L)
+                        .param("page", "0")
+                        .param("size", "20"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(1)));
+                .andExpect(jsonPath("$.content", hasSize(1)));
 
-        verify(appointmentService, times(1)).getAppointmentsByClinicId(1L);
+        verify(appointmentService, times(1)).getAppointmentsByClinicId(eq(1L), any(Pageable.class));
     }
 
     @Test
     void getAppointmentsByMedicalServiceIdSuccess() throws Exception {
-        when(appointmentService.getAppointmentsByMedicalServiceId(1L)).thenReturn(List.of(appointmentDto));
+        Page<AppointmentDto> page = new PageImpl<>(List.of(appointmentDto));
 
-        mockMvc.perform(get("/public/appointments/service/{serviceId}", 1L))
+        when(appointmentService.getAppointmentsByMedicalServiceId(eq(1L), any(Pageable.class))).thenReturn(page);
+
+        mockMvc.perform(get("/public/appointments/service/{serviceId}", 1L)
+                        .param("page", "0")
+                        .param("size", "20"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(1)));
+                .andExpect(jsonPath("$.content", hasSize(1)));
 
-        verify(appointmentService, times(1)).getAppointmentsByMedicalServiceId(1L);
+        verify(appointmentService, times(1)).getAppointmentsByMedicalServiceId(eq(1L), any(Pageable.class));
     }
 
     @Test
     void getAppointmentsByStatusSuccess() throws Exception {
-        when(appointmentService.getAppointmentsByStatus(AppointmentStatus.SCHEDULED))
-                .thenReturn(List.of(appointmentDto));
+        Page<AppointmentDto> page = new PageImpl<>(List.of(appointmentDto));
+
+        when(appointmentService.getAppointmentsByStatus(eq(AppointmentStatus.SCHEDULED), any(Pageable.class)))
+                .thenReturn(page);
 
         mockMvc.perform(get("/public/appointments/status")
-                        .param("status", "SCHEDULED"))
+                        .param("status", "SCHEDULED")
+                        .param("page", "0")
+                        .param("size", "20"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(1)))
-                .andExpect(jsonPath("$[0].status", is("SCHEDULED")));
+                .andExpect(jsonPath("$.content", hasSize(1)))
+                .andExpect(jsonPath("$.content[0].status", is("SCHEDULED")));
 
-        verify(appointmentService, times(1)).getAppointmentsByStatus(AppointmentStatus.SCHEDULED);
+        verify(appointmentService, times(1))
+                .getAppointmentsByStatus(eq(AppointmentStatus.SCHEDULED), any(Pageable.class));
     }
 
     @Test
     void getAppointmentsByPatientAndStatusSuccess() throws Exception {
-        when(appointmentService.getAppointmentsByPatientIdAndStatus(1L, AppointmentStatus.SCHEDULED))
-                .thenReturn(List.of(appointmentDto));
+        Page<AppointmentDto> page = new PageImpl<>(List.of(appointmentDto));
+
+        when(appointmentService.getAppointmentsByPatientIdAndStatus(eq(1L), eq(AppointmentStatus.SCHEDULED), any(Pageable.class)))
+                .thenReturn(page);
 
         mockMvc.perform(get("/public/appointments/patient/{patientId}/status", 1L)
-                        .param("status", "SCHEDULED"))
+                        .param("status", "SCHEDULED")
+                        .param("page", "0")
+                        .param("size", "20"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(1)));
+                .andExpect(jsonPath("$.content", hasSize(1)));
 
         verify(appointmentService, times(1))
-                .getAppointmentsByPatientIdAndStatus(1L, AppointmentStatus.SCHEDULED);
+                .getAppointmentsByPatientIdAndStatus(eq(1L), eq(AppointmentStatus.SCHEDULED), any(Pageable.class));
     }
 
     @Test
     void getAppointmentsByEmployeeAndStatusSuccess() throws Exception {
-        when(appointmentService.getAppointmentsByEmployeeIdAndStatus(1L, AppointmentStatus.SCHEDULED))
-                .thenReturn(List.of(appointmentDto));
+        Page<AppointmentDto> page = new PageImpl<>(List.of(appointmentDto));
+
+        when(appointmentService.getAppointmentsByEmployeeIdAndStatus(eq(1L), eq(AppointmentStatus.SCHEDULED), any(Pageable.class)))
+                .thenReturn(page);
 
         mockMvc.perform(get("/public/appointments/employee/{employeeId}/status", 1L)
-                        .param("status", "SCHEDULED"))
+                        .param("status", "SCHEDULED")
+                        .param("page", "0")
+                        .param("size", "20"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(1)));
+                .andExpect(jsonPath("$.content", hasSize(1)));
 
         verify(appointmentService, times(1))
-                .getAppointmentsByEmployeeIdAndStatus(1L, AppointmentStatus.SCHEDULED);
+                .getAppointmentsByEmployeeIdAndStatus(eq(1L), eq(AppointmentStatus.SCHEDULED), any(Pageable.class));
     }
 
     @Test
     void getAppointmentsByDateRangeSuccess() throws Exception {
         LocalDateTime start = LocalDateTime.now().minusDays(1);
         LocalDateTime end = LocalDateTime.now().plusDays(1);
+        Page<AppointmentDto> page = new PageImpl<>(List.of(appointmentDto));
 
-        when(appointmentService.getAppointmentsByDateRange(start, end))
-                .thenReturn(List.of(appointmentDto));
+        when(appointmentService.getAppointmentsByDateRange(eq(start), eq(end), any(Pageable.class)))
+                .thenReturn(page);
 
         mockMvc.perform(get("/public/appointments/date-range")
                         .param("start", start.toString())
-                        .param("end", end.toString()))
+                        .param("end", end.toString())
+                        .param("page", "0")
+                        .param("size", "20"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(1)));
+                .andExpect(jsonPath("$.content", hasSize(1)));
 
-        verify(appointmentService, times(1)).getAppointmentsByDateRange(start, end);
+        verify(appointmentService, times(1))
+                .getAppointmentsByDateRange(eq(start), eq(end), any(Pageable.class));
     }
 
     @Test
     void getAppointmentsByEmployeeAndDateRangeSuccess() throws Exception {
         LocalDateTime start = LocalDateTime.now().minusDays(1);
         LocalDateTime end = LocalDateTime.now().plusDays(1);
+        Page<AppointmentDto> page = new PageImpl<>(List.of(appointmentDto));
 
-        when(appointmentService.getAppointmentsByEmployeeAndDateRange(1L, start, end))
-                .thenReturn(List.of(appointmentDto));
+        when(appointmentService.getAppointmentsByEmployeeAndDateRange(eq(1L), eq(start), eq(end), any(Pageable.class)))
+                .thenReturn(page);
 
         mockMvc.perform(get("/public/appointments/employee/{employeeId}/date-range", 1L)
                         .param("start", start.toString())
-                        .param("end", end.toString()))
+                        .param("end", end.toString())
+                        .param("page", "0")
+                        .param("size", "20"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(1)));
+                .andExpect(jsonPath("$.content", hasSize(1)));
 
         verify(appointmentService, times(1))
-                .getAppointmentsByEmployeeAndDateRange(1L, start, end);
+                .getAppointmentsByEmployeeAndDateRange(eq(1L), eq(start), eq(end), any(Pageable.class));
+    }
+
+    @Test
+    void getAppointmentsByStatusesSuccess() throws Exception {
+        Page<AppointmentDto> page = new PageImpl<>(List.of(appointmentDto));
+        List<AppointmentStatus> statuses = List.of(AppointmentStatus.SCHEDULED, AppointmentStatus.CONFIRMED);
+
+        when(appointmentService.getAppointmentsByStatuses(eq(statuses), any(Pageable.class))).thenReturn(page);
+
+        mockMvc.perform(get("/public/appointments/statuses")
+                        .param("statuses", "SCHEDULED,CONFIRMED")
+                        .param("page", "0")
+                        .param("size", "20"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content", hasSize(1)));
+
+        verify(appointmentService, times(1)).getAppointmentsByStatuses(eq(statuses), any(Pageable.class));
     }
 }

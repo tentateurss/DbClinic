@@ -72,16 +72,14 @@ public class MedicalServiceServiceImpl implements MedicalServiceService {
     }
 
     @Override
-    public List<MedicalServiceDto> findMedicalServiceByClinicId(Long clinicId) {
+    public Page<MedicalServiceDto> findMedicalServiceByClinicId(Long clinicId, Pageable pageable) {
         clinicRepository.findById(clinicId)
                 .orElseThrow(() -> new NotFoundException("Клиника с ID " + clinicId + " не найдена"));
 
-        List<MedicalService> list = medicalServiceRepository.findByClinicId(clinicId);
+        Page<MedicalService> page = medicalServiceRepository.findByClinicId(clinicId, pageable);
 
-        log.debug("Найдено {} услуг для клиники с ID: {}", list.size(), clinicId);
-        return list.stream()
-                .map(MedicalServiceMapper::toDto)
-                .collect(Collectors.toList());
+        log.debug("Найдено {} услуг для клиники с ID: {}", page.getTotalElements(), clinicId);
+        return page.map(MedicalServiceMapper::toDto);
     }
 
     @Override

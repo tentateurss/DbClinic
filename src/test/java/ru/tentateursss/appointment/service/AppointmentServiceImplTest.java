@@ -371,146 +371,161 @@ class AppointmentServiceImplTest {
 
     @Test
     void getAppointmentsByPatientIdSuccess() {
-        when(appointmentRepository.findByPatientId(1L)).thenReturn(List.of(appointment));
+        Page<Appointment> page = new PageImpl<>(List.of(appointment));
 
-        List<AppointmentDto> result = appointmentService.getAppointmentsByPatientId(1L);
+        when(appointmentRepository.findByPatientId(eq(1L), any(Pageable.class))).thenReturn(page);
+
+        Page<AppointmentDto> result = appointmentService.getAppointmentsByPatientId(1L, PageRequest.of(0, 20));
 
         assertNotNull(result);
-        assertEquals(1, result.size());
+        assertEquals(1, result.getContent().size());
 
-        verify(appointmentRepository, times(1)).findByPatientId(1L);
+        verify(appointmentRepository, times(1)).findByPatientId(eq(1L), any(Pageable.class));
     }
 
     @Test
     void getAppointmentsByPatientIdReturnsEmptyList() {
-        when(appointmentRepository.findByPatientId(1L)).thenReturn(List.of());
+        Page<Appointment> emptyPage = new PageImpl<>(List.of());
 
-        List<AppointmentDto> result = appointmentService.getAppointmentsByPatientId(1L);
+        when(appointmentRepository.findByPatientId(eq(1L), any(Pageable.class))).thenReturn(emptyPage);
+
+        Page<AppointmentDto> result = appointmentService.getAppointmentsByPatientId(1L, PageRequest.of(0, 20));
 
         assertNotNull(result);
-        assertTrue(result.isEmpty());
+        assertTrue(result.getContent().isEmpty());
 
-        verify(appointmentRepository, times(1)).findByPatientId(1L);
+        verify(appointmentRepository, times(1)).findByPatientId(eq(1L), any(Pageable.class));
     }
 
     @Test
     void getAppointmentsByEmployeeIdSuccess() {
-        when(appointmentRepository.findByEmployeeId(1L)).thenReturn(List.of(appointment));
+        Page<Appointment> page = new PageImpl<>(List.of(appointment));
 
-        List<AppointmentDto> result = appointmentService.getAppointmentsByEmployeeId(1L);
+        when(appointmentRepository.findByEmployeeId(eq(1L), any(Pageable.class))).thenReturn(page);
+
+        Page<AppointmentDto> result = appointmentService.getAppointmentsByEmployeeId(1L, PageRequest.of(0, 20));
 
         assertNotNull(result);
-        assertEquals(1, result.size());
+        assertEquals(1, result.getContent().size());
 
-        verify(appointmentRepository, times(1)).findByEmployeeId(1L);
+        verify(appointmentRepository, times(1)).findByEmployeeId(eq(1L), any(Pageable.class));
     }
 
     @Test
     void getAppointmentsByEmployeeIdReturnsEmptyList() {
-        when(appointmentRepository.findByEmployeeId(1L)).thenReturn(List.of());
+        Page<Appointment> emptyPage = new PageImpl<>(List.of());
 
-        List<AppointmentDto> result = appointmentService.getAppointmentsByEmployeeId(1L);
+        when(appointmentRepository.findByEmployeeId(eq(1L), any(Pageable.class))).thenReturn(emptyPage);
+
+        Page<AppointmentDto> result = appointmentService.getAppointmentsByEmployeeId(1L, PageRequest.of(0, 20));
 
         assertNotNull(result);
-        assertTrue(result.isEmpty());
+        assertTrue(result.getContent().isEmpty());
 
-        verify(appointmentRepository, times(1)).findByEmployeeId(1L);
+        verify(appointmentRepository, times(1)).findByEmployeeId(eq(1L), any(Pageable.class));
     }
 
     @Test
     void getAppointmentsByClinicIdSuccess() {
-        when(appointmentRepository.findByClinicId(1L)).thenReturn(List.of(appointment));
+        Page<Appointment> page = new PageImpl<>(List.of(appointment));
 
-        List<AppointmentDto> result = appointmentService.getAppointmentsByClinicId(1L);
+        when(appointmentRepository.findByClinicId(eq(1L), any(Pageable.class))).thenReturn(page);
+
+        Page<AppointmentDto> result = appointmentService.getAppointmentsByClinicId(1L, PageRequest.of(0, 20));
 
         assertNotNull(result);
-        assertEquals(1, result.size());
+        assertEquals(1, result.getContent().size());
 
-        verify(appointmentRepository, times(1)).findByClinicId(1L);
+        verify(appointmentRepository, times(1)).findByClinicId(eq(1L), any(Pageable.class));
     }
 
     @Test
     void getAppointmentsByMedicalServiceIdSuccess() {
-        when(appointmentRepository.findByMedicalServiceId(1L)).thenReturn(List.of(appointment));
+        Page<Appointment> page = new PageImpl<>(List.of(appointment));
 
-        List<AppointmentDto> result = appointmentService.getAppointmentsByMedicalServiceId(1L);
+        when(appointmentRepository.findByMedicalServiceId(eq(1L), any(Pageable.class))).thenReturn(page);
+
+        Page<AppointmentDto> result = appointmentService.getAppointmentsByMedicalServiceId(1L, PageRequest.of(0, 20));
 
         assertNotNull(result);
-        assertEquals(1, result.size());
+        assertEquals(1, result.getContent().size());
 
-        verify(appointmentRepository, times(1)).findByMedicalServiceId(1L);
+        verify(appointmentRepository, times(1)).findByMedicalServiceId(eq(1L), any(Pageable.class));
     }
 
     @Test
     void getAppointmentsByStatusSuccess() {
-        when(appointmentRepository.findByStatus(AppointmentStatus.SCHEDULED))
-                .thenReturn(List.of(appointment));
+        Page<Appointment> page = new PageImpl<>(List.of(appointment));
 
-        List<AppointmentDto> result = appointmentService.getAppointmentsByStatus(AppointmentStatus.SCHEDULED);
+        when(appointmentRepository.findByStatus(eq(AppointmentStatus.SCHEDULED), any(Pageable.class))).thenReturn(page);
+
+        Page<AppointmentDto> result = appointmentService.getAppointmentsByStatus(AppointmentStatus.SCHEDULED, PageRequest.of(0, 20));
 
         assertNotNull(result);
-        assertEquals(1, result.size());
-        assertEquals(AppointmentStatus.SCHEDULED, result.get(0).getStatus());
+        assertEquals(1, result.getContent().size());
+        assertEquals(AppointmentStatus.SCHEDULED, result.getContent().get(0).getStatus());
 
-        verify(appointmentRepository, times(1)).findByStatus(AppointmentStatus.SCHEDULED);
+        verify(appointmentRepository, times(1)).findByStatus(eq(AppointmentStatus.SCHEDULED), any(Pageable.class));
     }
 
     @Test
     void getAppointmentsByPatientIdAndStatusSuccess() {
-        when(appointmentRepository.findByPatientIdAndStatus(1L, AppointmentStatus.SCHEDULED))
-                .thenReturn(List.of(appointment));
+        Page<Appointment> page = new PageImpl<>(List.of(appointment));
 
-        List<AppointmentDto> result = appointmentService.getAppointmentsByPatientIdAndStatus(1L, AppointmentStatus.SCHEDULED);
+        when(appointmentRepository.findByPatientIdAndStatus(eq(1L), eq(AppointmentStatus.SCHEDULED), any(Pageable.class))).thenReturn(page);
+
+        Page<AppointmentDto> result = appointmentService.getAppointmentsByPatientIdAndStatus(1L, AppointmentStatus.SCHEDULED, PageRequest.of(0, 20));
 
         assertNotNull(result);
-        assertEquals(1, result.size());
+        assertEquals(1, result.getContent().size());
 
-        verify(appointmentRepository, times(1)).findByPatientIdAndStatus(1L, AppointmentStatus.SCHEDULED);
+        verify(appointmentRepository, times(1)).findByPatientIdAndStatus(eq(1L), eq(AppointmentStatus.SCHEDULED), any(Pageable.class));
     }
 
     @Test
     void getAppointmentsByEmployeeIdAndStatusSuccess() {
-        when(appointmentRepository.findByEmployeeIdAndStatus(1L, AppointmentStatus.SCHEDULED))
-                .thenReturn(List.of(appointment));
+        Page<Appointment> page = new PageImpl<>(List.of(appointment));
 
-        List<AppointmentDto> result = appointmentService.getAppointmentsByEmployeeIdAndStatus(1L, AppointmentStatus.SCHEDULED);
+        when(appointmentRepository.findByEmployeeIdAndStatus(eq(1L), eq(AppointmentStatus.SCHEDULED), any(Pageable.class))).thenReturn(page);
+
+        Page<AppointmentDto> result = appointmentService.getAppointmentsByEmployeeIdAndStatus(1L, AppointmentStatus.SCHEDULED, PageRequest.of(0, 20));
 
         assertNotNull(result);
-        assertEquals(1, result.size());
+        assertEquals(1, result.getContent().size());
 
-        verify(appointmentRepository, times(1)).findByEmployeeIdAndStatus(1L, AppointmentStatus.SCHEDULED);
+        verify(appointmentRepository, times(1)).findByEmployeeIdAndStatus(eq(1L), eq(AppointmentStatus.SCHEDULED), any(Pageable.class));
     }
 
     @Test
     void getAppointmentsByDateRangeSuccess() {
         LocalDateTime start = LocalDateTime.now().minusDays(1);
         LocalDateTime end = LocalDateTime.now().plusDays(1);
+        Page<Appointment> page = new PageImpl<>(List.of(appointment));
 
-        when(appointmentRepository.findByDateTimeBetween(start, end))
-                .thenReturn(List.of(appointment));
+        when(appointmentRepository.findByDateTimeBetween(eq(start), eq(end), any(Pageable.class))).thenReturn(page);
 
-        List<AppointmentDto> result = appointmentService.getAppointmentsByDateRange(start, end);
+        Page<AppointmentDto> result = appointmentService.getAppointmentsByDateRange(start, end, PageRequest.of(0, 20));
 
         assertNotNull(result);
-        assertEquals(1, result.size());
+        assertEquals(1, result.getContent().size());
 
-        verify(appointmentRepository, times(1)).findByDateTimeBetween(start, end);
+        verify(appointmentRepository, times(1)).findByDateTimeBetween(eq(start), eq(end), any(Pageable.class));
     }
 
     @Test
     void getAppointmentsByEmployeeAndDateRangeSuccess() {
         LocalDateTime start = LocalDateTime.now().minusDays(1);
         LocalDateTime end = LocalDateTime.now().plusDays(1);
+        Page<Appointment> page = new PageImpl<>(List.of(appointment));
 
-        when(appointmentRepository.findByEmployeeIdAndDateTimeBetween(1L, start, end))
-                .thenReturn(List.of(appointment));
+        when(appointmentRepository.findByEmployeeIdAndDateTimeBetween(eq(1L), eq(start), eq(end), any(Pageable.class))).thenReturn(page);
 
-        List<AppointmentDto> result = appointmentService.getAppointmentsByEmployeeAndDateRange(1L, start, end);
+        Page<AppointmentDto> result = appointmentService.getAppointmentsByEmployeeAndDateRange(1L, start, end, PageRequest.of(0, 20));
 
         assertNotNull(result);
-        assertEquals(1, result.size());
+        assertEquals(1, result.getContent().size());
 
-        verify(appointmentRepository, times(1)).findByEmployeeIdAndDateTimeBetween(1L, start, end);
+        verify(appointmentRepository, times(1)).findByEmployeeIdAndDateTimeBetween(eq(1L), eq(start), eq(end), any(Pageable.class));
     }
 
     @Test
@@ -695,5 +710,20 @@ class AppointmentServiceImplTest {
         assertThrows(DateTimeConflict.class, () -> {
             appointmentService.createAppointment(newAppointmentDto);
         });
+    }
+
+    @Test
+    void getAppointmentsByStatusesSuccess() {
+        Page<Appointment> page = new PageImpl<>(List.of(appointment));
+        List<AppointmentStatus> statuses = List.of(AppointmentStatus.SCHEDULED, AppointmentStatus.CONFIRMED);
+
+        when(appointmentRepository.findByStatusIn(eq(statuses), any(Pageable.class))).thenReturn(page);
+
+        Page<AppointmentDto> result = appointmentService.getAppointmentsByStatuses(statuses, PageRequest.of(0, 20));
+
+        assertNotNull(result);
+        assertEquals(1, result.getContent().size());
+
+        verify(appointmentRepository, times(1)).findByStatusIn(eq(statuses), any(Pageable.class));
     }
 }

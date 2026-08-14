@@ -129,48 +129,40 @@ public class EmployeeServiceImpl implements EmployeeService {
     }
 
     @Override
-    public List<EmployeeDto> getEmployeesByClinicId(Long clinicId) {
+    public Page<EmployeeDto> getEmployeesByClinicId(Long clinicId, Pageable pageable) {
         clinicRepository.findById(clinicId)
                 .orElseThrow(() -> new NotFoundException("Клиника с ID " + clinicId + " не найдена"));
 
-        List<Employee> employees = employeeRepository.findByClinicId(clinicId);
+        Page<Employee> employees = employeeRepository.findByClinicId(clinicId, pageable);
 
-        log.debug("Найдено {} работников для клиники с ID: {}", employees.size(), clinicId);
-        return employees.stream()
-                .map(EmployeeMapper::toDto)
-                .collect(Collectors.toList());
+        log.debug("Найдено {} работников для клиники с ID: {}", employees.getTotalElements(), clinicId);
+        return employees.map(EmployeeMapper::toDto);
     }
 
     @Override
-    public List<EmployeeDto> getEmployeesByRole(EmployeeRole role) {
-        List<Employee> employees = employeeRepository.findByRole(role);
+    public Page<EmployeeDto> getEmployeesByRole(EmployeeRole role, Pageable pageable) {
+        Page<Employee> employees = employeeRepository.findByRole(role, pageable);
 
-        log.debug("Найдено {} работников с ролью: {}", employees.size(), role);
-        return employees.stream()
-                .map(EmployeeMapper::toDto)
-                .collect(Collectors.toList());
+        log.debug("Найдено {} работников с ролью: {}", employees.getTotalElements(), role);
+        return employees.map(EmployeeMapper::toDto);
     }
 
     @Override
-    public List<EmployeeDto> getEmployeesByClinicIdAndRole(Long clinicId, EmployeeRole role) {
+    public Page<EmployeeDto> getEmployeesByClinicIdAndRole(Long clinicId, EmployeeRole role, Pageable pageable) {
         clinicRepository.findById(clinicId)
                 .orElseThrow(() -> new NotFoundException("Клиника с ID " + clinicId + " не найдена"));
 
-        List<Employee> employees = employeeRepository.findByClinicIdAndRole(clinicId, role);
+        Page<Employee> employees = employeeRepository.findByClinicIdAndRole(clinicId, role, pageable);
 
-        log.debug("Найдено {} работников для клиники с ID: {} и ролью: {}", employees.size(), clinicId, role);
-        return employees.stream()
-                .map(EmployeeMapper::toDto)
-                .collect(Collectors.toList());
+        log.debug("Найдено {} работников для клиники с ID: {} и ролью: {}", employees.getTotalElements(), clinicId, role);
+        return employees.map(EmployeeMapper::toDto);
     }
 
     @Override
-    public List<EmployeeDto> getEmployeesBySpecializationContainingIgnoreCase(String specialization) {
-        List<Employee> employees = employeeRepository.findBySpecializationContainingIgnoreCase(specialization);
+    public Page<EmployeeDto> getEmployeesBySpecializationContainingIgnoreCase(String specialization, Pageable pageable) {
+        Page<Employee> employees = employeeRepository.findBySpecializationContainingIgnoreCase(specialization, pageable);
 
-        log.debug("Найдено {} работников со специализацией: {}", employees.size(), specialization);
-        return employees.stream()
-                .map(EmployeeMapper::toDto)
-                .collect(Collectors.toList());
+        log.debug("Найдено {} работников со специализацией: {}", employees.getTotalElements(), specialization);
+        return employees.map(EmployeeMapper::toDto);
     }
 }
